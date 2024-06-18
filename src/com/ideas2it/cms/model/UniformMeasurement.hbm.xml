@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="src.com.ideas2it.cms.model">
+    <class name="UniformMeasurement" table="uniform_measurement_database">
+        <id name="rollNumber" column="roll_number">
+            
+        </id>
+        <property name="shirtSize" column="shirt_size" />
+        <property name="pantSize" column="pant_size" />
+        <property name="shoeSize" column="standard" />
+        <one-to-one name="student" class="src.com.ideas2it.cms.model.Student"></one-to-one>
+    </class>
+</hibernate-mapping>
