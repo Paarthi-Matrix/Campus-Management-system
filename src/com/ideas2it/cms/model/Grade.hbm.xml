@@ -11,7 +11,7 @@
         <property name="numberOfStudents" column="number_of_students" />
         <property name="standard" column="standard" />
         <property name="section" column="section" />
-        <set name="students" table="student_database" inverse="true" cascade="all" lazy="true" fetch="select">
+        <set name="students" table="student_database" inverse="true" cascade="all" fetch="select">
             <key>
                 <column name="grade_id" not-null="true" />
             </key>

@@ -37,9 +37,7 @@ public class SpecialClassDAO {
     /**
      *
      * <p>
-     *
      * Retrieves special classes from the database based on the provided preferences.
-     *
      * </p>
      *
      * @param specialClassPreference 
@@ -87,10 +85,8 @@ public class SpecialClassDAO {
 
     /**
      * <p>
-     *
      * Updates the vacancy and number of students for the special classes
      * based on the provided preferences and action.
-     *
      * </p>
      *
      * @param specialClassPreference 
@@ -157,6 +153,7 @@ public class SpecialClassDAO {
      */
 
     private String convertSpecialClassArrayToString(int[] specialClassPreference) {
+
         StringBuilder specialClassString = new StringBuilder();
         for (int id : specialClassPreference) {
             specialClassString.append(id).append(" ");

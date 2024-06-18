@@ -49,7 +49,7 @@ public class StudentService {
      *        The date of birth of the student. Should be in formate of (dd/MM/yyyy). 
      *
      * @param bloodGroup 
-     *        The blood group of the student.
+     *        The blood group of the student. Everything should be uppercase.
      * 
      * @param gradeAllocated
      *        The grade allocated to the student.
@@ -142,7 +142,6 @@ public class StudentService {
      */
 
     public Student getAndDeleteStudentByRollNumber(String rollNumber) {
-
         Student student = studentDao.getAndDeleteStudentByRollNumber(rollNumber);
         if (null == student) {
             return null;
@@ -200,7 +199,6 @@ public class StudentService {
      */
 
     public void associateStudentToSpecialClass(Student student, int[] specialClassPreference) {
-
         Set<SpecialClass> specialClasses = specialClassService.retrieveSpecialClasses(specialClassPreference);
         student.setSpecialClass(specialClasses);
         studentDao.associateStudentToSpecialClass(student);
@@ -236,7 +234,6 @@ public class StudentService {
      */
 
     public void addUniformMeasurementToStudent(Student student, String shirtSize, int pantSize, int shoeSize) {
-
         UniformMeasurement uniformMeasurement = new UniformMeasurement(student.getRollNumber(), shirtSize, pantSize, shoeSize);
         student.setUniformMeasurement(uniformMeasurement);
         studentDao.addUniformMeasurementToStudent(student);

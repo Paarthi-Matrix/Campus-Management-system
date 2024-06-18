@@ -11,7 +11,7 @@
         <property name="vacancy" column="vacancy" />
         <property name="numberOfStudents" column="number_of_students" />
         <property name="handlingStaff" column="handling_staff" />
-        <set name="students" table="student_specialclass" inverse="true" cascade="all" lazy="true" fetch="select">
+        <set name="students" table="student_specialclass" inverse="true" cascade="all" fetch="select">
             <key>
                 <column name="specialclass_id" not-null="true" />
             </key>

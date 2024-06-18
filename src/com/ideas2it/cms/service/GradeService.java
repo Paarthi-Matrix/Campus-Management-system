@@ -26,9 +26,7 @@ public class GradeService {
 
     /**
      * <p>
-     *
      * This method fetches the preferred grade based on the user's input.
-     *
      * </p>
      *
      * @param gradePreference
@@ -40,7 +38,6 @@ public class GradeService {
      *
      * @throws HibernateDbConnectionException
      *         Arises if unable to connect and get the `SessionFactory`.
-     *
      */
 
     public Grade getPreferedGrade(int gradePreference) {

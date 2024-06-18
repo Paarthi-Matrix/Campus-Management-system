@@ -42,6 +42,10 @@ public class SpecialClassService {
      * @throws SpecialClassException 
      *         Arises if an error occurs while retrieving special classes.
      *
+     * @throws HibernateDbConnectionException
+     *         Arises if unable to connect and get the `SessionFactory`.
+     *
+
      */
 
     public Set<SpecialClass> retrieveSpecialClasses(int[] specialClassPreference) {
@@ -51,10 +55,8 @@ public class SpecialClassService {
     /**
      *
      * <p>
-     *
      * Updates the vacancy and number of students for the special classes.
      * This method can be used for both increment and decrement of both vacancy and number of students.
-     *
      * </p>
      *
      * @param specialClassPreference 
@@ -67,6 +69,8 @@ public class SpecialClassService {
      * @throws SpecialClassException 
      *         Arises if an error occurs while updating vacancy and number of students.
      *
+     * @throws HibernateDbConnectionException
+     *         Arises if unable to connect and get the `SessionFactory`.
      */
 
     public void updateVacancyAndNunmberOfStudents(int[] specialClassPreference, boolean action) {

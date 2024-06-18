@@ -34,9 +34,7 @@ public class StudentDAO {
     /**
      *
      * <p>
-     *
      * Adds a new student to the database.
-     *
      * </p>
      *
      * @param student 
@@ -79,9 +77,7 @@ public class StudentDAO {
     /**
      *
      * <p>
-     *
      * Retrieves and deletes a student from the database by their roll number.
-     *
      * </p>
      *
      * @param rollNumber 
@@ -129,9 +125,7 @@ public class StudentDAO {
     /**
      *
      * <p>
-     *
      * Retrieves a list of students from the database by their grade.
-     *
      * </p>
      *
      * @param requestedGrade 
@@ -174,9 +168,7 @@ public class StudentDAO {
     /**
      * 
      * <p>
-     *
      * Associates a student to a special class in the database.
-     *
      * </p>
      *
      * @param student 
@@ -215,9 +207,7 @@ public class StudentDAO {
     /**
      *
      * <p>
-     *
      * Adds uniform measurements to a student in the database.
-     *
      * </p>
      *
      * @param student 

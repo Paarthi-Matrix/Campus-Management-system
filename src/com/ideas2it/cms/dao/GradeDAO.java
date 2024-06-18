@@ -32,10 +32,8 @@ public class GradeDAO {
     /**
      *
      * <p>
-     * 
      * This method gets prefered `grade` given by user. It also checks for vacancy and returns the grade-
      * with available section.
-     *
      * </p>
      * 
      * @param gradePreference
@@ -59,9 +57,7 @@ public class GradeDAO {
         Grade grade = null;
 
         try {
-
-            transaction = session.beginTransaction();
-            
+            transaction = session.beginTransaction(); 
             Query<Grade> query = session.createQuery("FROM Grade WHERE gradeId LIKE :gradeId", Grade.class);
             query.setParameter("gradeId", gradePreference + "%");
             List<Grade> grades = query.getResultList();
@@ -72,33 +68,25 @@ public class GradeDAO {
                     break;
                 }
             }
-
             transaction.commit();
         } catch (Exception e) {
-
             if (transaction != null) {
                 transaction.rollback();
             }
-
             String errorMessage = "An error occurred while attempting to fetch and process the grade with preference " +
                                    gradePreference;
- 
-            throw new GradeDatabaseException(errorMessage, e);
-         
+            throw new GradeDatabaseException(errorMessage, e);         
         } finally {
             session.close();
         }
-
         return grade;
     }
 
     /**
      *
-     * <p>
-     * 
+     * <p> 
      * This method gets prefered `grade` given by user. It also checks for vacancy and returns the grade-
      * with available section.
-     *
      * </p>
      * 
      * @param requestedGrade
@@ -123,9 +111,7 @@ public class GradeDAO {
         List<Grade> grades = new ArrayList<>();
 
         try {
-
-            transaction = session.beginTransaction();
-            
+            transaction = session.beginTransaction();   
             Query<Grade> query = session.createQuery("FROM Grade WHERE gradeId LIKE :gradeId", Grade.class);
             query.setParameter("gradeId", requestedGrade + "%");
             grades = query.getResultList();
@@ -133,7 +119,6 @@ public class GradeDAO {
             transaction.commit();
 
         } catch (Exception e) {
-
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -146,17 +131,14 @@ public class GradeDAO {
         } finally {
             session.close();
         }
-
         return grades;
     }
 
         
     /**
      * <p>
-     *
      * This method updates the section and vacancy availability for a given grade.
      * It either increments or decrements the vacancy and number of students based on the action parameter.
-     *
      * </p>
      * 
      * @param gradeIdAllocated
@@ -207,9 +189,7 @@ public class GradeDAO {
 
     /**
      * <p>
-     *
      * This method is used to get the number of students for a particular `grade`.
-     *
      * </p>
      * 
      * @param gradeId
@@ -243,14 +223,12 @@ public class GradeDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-
             String errorMessage = "An error occurredwhile fetching the number of students for prefered grade " +
                                    gradeId;
  
             throw new GradeDatabaseException(errorMessage, e);
         } finally {
             session.close();
-        }
-        
+        }        
     }
 }
