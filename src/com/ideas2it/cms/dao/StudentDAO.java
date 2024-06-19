@@ -29,7 +29,6 @@ public class StudentDAO {
 
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();
     private SessionFactory sessionFactory = hibernateDbConnection.getSessionFactory();
-    private Session session;
 
     /**
      *
@@ -52,11 +51,9 @@ public class StudentDAO {
      */
 
     public Student addStudent(Student student) {
-
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.save(student);
             transaction.commit();
@@ -69,9 +66,7 @@ public class StudentDAO {
                                    student.getStudentName() + " with roll number " + student.getRollNumber() + " to the database. " +
                                    "Please try again!";
             throw new StudentDatabaseException(errorMessage, e);
-        } finally {
-            session.close();
-        }
+        } 
     }
 
     /**
@@ -95,11 +90,9 @@ public class StudentDAO {
      */
 
     public Student getAndDeleteStudentByRollNumber(String rollNumber) {
-
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             Query<Student> query = session.createQuery("FROM Student WHERE rollNumber = :rollNumber", Student.class);
             query.setParameter("rollNumber", rollNumber);
@@ -117,9 +110,7 @@ public class StudentDAO {
                                   "with roll number " + rollNumber + " from the database. " +
                                   "Please try again!";
             throw new StudentDatabaseException(errorMessage, e);
-        } finally {
-            session.close();
-        }
+        } 
     }
 
     /**
@@ -144,10 +135,9 @@ public class StudentDAO {
 
     public List<Student> getStudentByGrade(String requestedGrade) {
 
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             Query<Student> query = session.createQuery("FROM Student s WHERE s.grade.gradeId LIKE :gradeId", Student.class);
             query.setParameter("gradeId", requestedGrade + "%");
@@ -160,8 +150,6 @@ public class StudentDAO {
             String errorMessage = "An error occurred while attempting to retrieve students for grade " +
                                   requestedGrade + ". Please try again!";
             throw new StudentDatabaseException(errorMessage, e);
-        } finally {
-            session.close();
         }
     }
 
@@ -183,11 +171,9 @@ public class StudentDAO {
      */
 
     public void associateStudentToSpecialClass(Student student) {
-
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.saveOrUpdate(student);
             transaction.commit();
@@ -199,8 +185,6 @@ public class StudentDAO {
                                   "for student " + student.getStudentName() + " with roll number " +
                                   student.getRollNumber() + ". Please try again!";
             throw new StudentDatabaseException(errorMessage, e);
-        } finally {
-            session.close();
         }
     }
 
@@ -222,11 +206,9 @@ public class StudentDAO {
      */
 
     public void addUniformMeasurementToStudent(Student student) {
-
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.update(student);
             transaction.commit();
@@ -238,8 +220,6 @@ public class StudentDAO {
                                   student.getStudentName() + " with roll number " +
                                   student.getRollNumber() + ". Please try again!";
             throw new StudentDatabaseException(errorMessage, e);
-        } finally {
-            session.close();
         }
     }
 }

@@ -32,7 +32,6 @@ public class SpecialClassDAO {
 
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();
     private SessionFactory sessionFactory = hibernateDbConnection.getSessionFactory();
-    private Session session;
 
     /**
      *
@@ -55,12 +54,10 @@ public class SpecialClassDAO {
      */
 
     public Set<SpecialClass> retrieveSpecialClasses(int[] specialClassPreference) {
-
-        session = sessionFactory.openSession();
         Transaction transaction = null;
         Set<SpecialClass> specialClasses = new HashSet<>();
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             if (specialClassPreference != null && specialClassPreference.length > 0) {
                 List<Integer> preferenceList = Arrays.stream(specialClassPreference).boxed().collect(Collectors.toList());
@@ -68,8 +65,8 @@ public class SpecialClassDAO {
                         "FROM SpecialClass WHERE specialClassId IN :specialClassPreference", SpecialClass.class);
                 query.setParameter("specialClassPreference", preferenceList);
                 specialClasses.addAll(query.getResultList());
+                transaction.commit();
             }
-            transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
@@ -77,8 +74,6 @@ public class SpecialClassDAO {
             String errorMessage = "An error occurred while retrieving special classes " +
                                   convertSpecialClassArrayToString(specialClassPreference);
             throw new SpecialClassException(errorMessage, e);
-        } finally {
-            session.close();
         }
         return specialClasses;
     }
@@ -106,11 +101,10 @@ public class SpecialClassDAO {
 
     public void updateVacancyAndNunmberOfStudents(int[] specialClassPreference, boolean action) {
 
-        session = sessionFactory.openSession();
         Transaction transaction = null;
         Set<SpecialClass> specialClasses = new HashSet<>();
 
-        try {
+        try  (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             if (specialClassPreference != null && specialClassPreference.length > 0) {
                 List<Integer> preferenceList = Arrays.stream(specialClassPreference).boxed().collect(Collectors.toList());
@@ -118,6 +112,7 @@ public class SpecialClassDAO {
                         "FROM SpecialClass WHERE specialClassId IN :specialClassPreference", SpecialClass.class);
                 query.setParameter("specialClassPreference", preferenceList);
                 specialClasses.addAll(query.getResultList());
+                transaction.commit();
 
                 if (specialClasses != null) {
                     int number = action ? 1 : -1;
@@ -135,9 +130,7 @@ public class SpecialClassDAO {
             String errorMessage = "An error occurred while updating vacancy and number of students for special class " +
                                   convertSpecialClassArrayToString(specialClassPreference);
             throw new SpecialClassException(errorMessage, e);
-        } finally {
-            session.close();
-        }
+        } 
     }
 
     /**
@@ -153,7 +146,6 @@ public class SpecialClassDAO {
      */
 
     private String convertSpecialClassArrayToString(int[] specialClassPreference) {
-
         StringBuilder specialClassString = new StringBuilder();
         for (int id : specialClassPreference) {
             specialClassString.append(id).append(" ");

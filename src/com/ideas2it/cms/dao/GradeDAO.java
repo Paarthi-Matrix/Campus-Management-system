@@ -27,7 +27,6 @@ public class GradeDAO {
     
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();
     private SessionFactory sessionFactory = hibernateDbConnection.getSessionFactory();
-    private Session session;
 
     /**
      *
@@ -51,12 +50,10 @@ public class GradeDAO {
      */ 
        
      public Grade getPreferedGrade(int gradePreference) {
-
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
         Grade grade = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction(); 
             Query<Grade> query = session.createQuery("FROM Grade WHERE gradeId LIKE :gradeId", Grade.class);
             query.setParameter("gradeId", gradePreference + "%");
@@ -77,7 +74,9 @@ public class GradeDAO {
                                    gradePreference;
             throw new GradeDatabaseException(errorMessage, e);         
         } finally {
-            session.close();
+            if (null != session) {
+                 session.close();
+            }          
         }
         return grade;
     }
@@ -106,30 +105,27 @@ public class GradeDAO {
        
      public List<Grade> getGradeInfo(String requestedGrade) {
 
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
         List<Grade> grades = new ArrayList<>();
 
-        try {
+        try (Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();   
             Query<Grade> query = session.createQuery("FROM Grade WHERE gradeId LIKE :gradeId", Grade.class);
             query.setParameter("gradeId", requestedGrade + "%");
             grades = query.getResultList();
-
             transaction.commit();
-
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-
             String errorMessage = "An error occurred while attempting to fetch the grade with preference " +
                                    requestedGrade;
- 
-            throw new GradeDatabaseException(errorMessage, e);
-         
+
+            throw new GradeDatabaseException(errorMessage, e);         
         } finally {
-            session.close();
+            if (null != session) {
+                 session.close();
+            }          
         }
         return grades;
     }
@@ -157,21 +153,17 @@ public class GradeDAO {
      */   
       
     public void updateNoOfStudentsAndVacancyAvailablity(String gradeIdAllocated, boolean action) {
-     
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
-            Grade grade = session.get(Grade.class, gradeIdAllocated);
-            
+            Grade grade = session.get(Grade.class, gradeIdAllocated);            
             if(null != grade) {
                 int number = action ? 1 : -1;
                 grade.setVacancy(grade.getVacancy() - number);
                 grade.setNumberOfStudents(grade.getNumberOfStudents() + number);
                 session.update(grade);
             }
-
             transaction.commit();
         } catch(Exception e) {
             if (transaction != null) {
@@ -179,12 +171,8 @@ public class GradeDAO {
             }
             String errorMessage = "An error occurred while updating vacancy and Number of students for grade " +
                                    gradeIdAllocated;
- 
             throw new GradeDatabaseException(errorMessage, e);
-
-        } finally {
-            session.close();
-        }    
+        }
     }   
 
     /**
@@ -208,16 +196,15 @@ public class GradeDAO {
      */ 
 
     public int getNumberOfStudents(String gradeId) {
-
-        session = sessionFactory.openSession();
         Transaction transaction = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
             Grade grade = session.get(Grade.class, gradeId);
             if(null == grade) {
                 return -1;
-            }
+            }    
+            transaction.commit();
             return grade.getNumberOfStudents();
         } catch (Exception e) {
             if (transaction != null) {
@@ -225,10 +212,7 @@ public class GradeDAO {
             }
             String errorMessage = "An error occurredwhile fetching the number of students for prefered grade " +
                                    gradeId;
- 
             throw new GradeDatabaseException(errorMessage, e);
-        } finally {
-            session.close();
-        }        
+        }   
     }
 }

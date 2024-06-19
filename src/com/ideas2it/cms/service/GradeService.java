@@ -51,9 +51,7 @@ public class GradeService {
     /**
      *
      * <p>
-     *
      * This method updates the number of students and vacancy availability for a given grade.
-     *
      * </p>
      *
      * @param gradeIDAllocated
@@ -72,17 +70,13 @@ public class GradeService {
      */
 
     public void updateNoOfStudentsAndVacancyAvailablity(String gradeIDAllocated, boolean action) {
-
-        gradeDao.updateNoOfStudentsAndVacancyAvailablity(gradeIDAllocated, action);
-               
+        gradeDao.updateNoOfStudentsAndVacancyAvailablity(gradeIDAllocated, action);              
     }
 
     /**
      *
      * <p>
-     *
      * This method retrieves the number of students in a specified grade.
-     *
      * </p>
      *
      * @param gradeAllocated
@@ -105,9 +99,7 @@ public class GradeService {
 
     /**
      * <p>
-     *
      * This method fetches the preferred grade based on the user's input.
-     *
      * </p>
      *
      * @param gradePreference
@@ -126,7 +118,6 @@ public class GradeService {
      */
 
     public List<Grade> getGradeInfo(String requestedGrade) {
-
        return gradeDao.getGradeInfo(requestedGrade);
     }
 }
