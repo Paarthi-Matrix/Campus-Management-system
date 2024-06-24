@@ -36,7 +36,6 @@ public class Grade {
         this.section = section;
     }
 
-
     public String getGradeId() {
         return gradeId;
     }
