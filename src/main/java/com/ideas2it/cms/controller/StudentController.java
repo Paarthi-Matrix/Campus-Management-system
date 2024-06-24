@@ -178,7 +178,7 @@ public class StudentController {
          List<Student> students = new ArrayList<>();
          try {
              students = studentService.getStudentByGrade(requestedGrade);
-         } catch (StudentDatabaseException ) {
+         } catch (StudentDatabaseException e ) {
              System.out.println(e.getMessage());
          }
          // Print the header for the student list

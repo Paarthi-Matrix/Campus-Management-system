@@ -1,8 +1,11 @@
 package com.ideas2it.cms.helper;
 
+import com.ideas2it.cms.customexception.HibernateDbConnectionException;
+
+import io.github.cdimascio.dotenv.Dotenv;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import com.ideas2it.cms.customexception.HibernateDbConnectionException;
+
 
 /**
  * <p>
@@ -24,11 +27,17 @@ public class HibernateDbConnection {
      *
      * @throws HibernateDbConnectionException if an error occurs while configuring SessionFactory.
      */
-
-    @SuppressWarnings("deprecation")
     private HibernateDbConnection() {
         try {
-            sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
+            Dotenv dotenv = Dotenv.configure().directory("./src/main/resources").load();
+            Configuration configuration = new Configuration();
+            configuration.setProperty("hibernate.connection.driver_class", dotenv.get("DB_DRIVER_CONNECTOR"));
+            configuration.setProperty("hibernate.connection.url", dotenv.get("DB_URL"));
+            configuration.setProperty("hibernate.connection.username", dotenv.get("DB_USERNAME"));
+            configuration.setProperty("hibernate.connection.password", dotenv.get("DB_PASSWORD"));
+            configuration.configure("hibernate.cfg.xml");
+            sessionFactory = configuration.buildSessionFactory();
+
         } catch (Throwable e) {
             String errorMessage = "Error occurred while configuring SessionFactory. Please try again!";
             throw new HibernateDbConnectionException(errorMessage, e);

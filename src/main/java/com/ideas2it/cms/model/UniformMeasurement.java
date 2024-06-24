@@ -11,23 +11,38 @@
  */
 
 package com.ideas2it.cms.model;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "uniform_measurement_database")
 public class UniformMeasurement {
 
-    private Student student;
-    private String shirtSize;
-    private int pantSize;
-    private int shoeSize;
+    @Id
+    @Column(name = "roll_number")
     private String rollNumber;
 
+    @Column(name = "shirt_size")
+    private String shirtSize;
+
+    @Column(name = "pant_size")
+    private int pantSize;
+
+    @Column(name = "shoe_size")
+    private int shoeSize;
+
+    @OneToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
+
+    // Constructors, getters, and setters
     public UniformMeasurement() {}
+
     public UniformMeasurement(String rollNumber, String shirtSize, int pantSize, int shoeSize) {
         this.rollNumber = rollNumber;
         this.shirtSize = shirtSize;
         this.pantSize = pantSize;
         this.shoeSize = shoeSize;
     }
-    
     public String getRollNumber() {
        return this.rollNumber;
     }

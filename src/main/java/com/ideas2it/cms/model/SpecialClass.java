@@ -9,26 +9,42 @@
 package com.ideas2it.cms.model;
 
 import java.util.Set;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "specialclass_database")
 public class SpecialClass {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "specialclass_id")
     private int specialClassId;
+
+    @Column(name = "class_name")
     private String className;
+
+    @Column(name = "vacancy")
     private int vacancy;
+
+    @Column(name = "number_of_students")
     private int numberOfStudents;
+
+    @Column(name = "handling_staff")
     private String handlingStaff;
+
+    @ManyToMany(mappedBy = "specialClass", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Student> students;
 
+    // Constructors, getters, and setters
     public SpecialClass() {}
 
-    public SpecialClass(int specialClassID, String className, int vacancy, int numberOfStudents, String handlingStaff) {
-         this.specialClassId = specialClassId;
-         this.className = className;
-         this.vacancy = vacancy;
-         this.numberOfStudents = numberOfStudents;
-         this.handlingStaff = handlingStaff;
+    public SpecialClass(int specialClassId, String className, int vacancy, int numberOfStudents, String handlingStaff) {
+        this.specialClassId = specialClassId;
+        this.className = className;
+        this.vacancy = vacancy;
+        this.numberOfStudents = numberOfStudents;
+        this.handlingStaff = handlingStaff;
     }
-
     public int getSpecialClassId() {
         return this.specialClassId;
     }

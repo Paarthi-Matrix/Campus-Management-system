@@ -36,7 +36,7 @@ public class StudentDAO {
      *
      * @param student 
      *        The student object to be added to the database.
-     * @return Student 
+     * @return `Student`
      *         Returns the added student object.
      * @throws StudentDatabaseException 
      *         Arises if an error occurs while adding the student.
@@ -54,8 +54,8 @@ public class StudentDAO {
                 transaction.rollback();
             }
             String errorMessage = "An error occurred while attempting to add student " +
-                                   " student.getStudentName() + " with roll number " +
-                                   " student.getRollNumber() + " to the database. " +
+                                    student.getStudentName() + " with roll number " +
+                                    student.getRollNumber() + " to the database. " +
                                    "Please try again!";
             throw new StudentDatabaseException(errorMessage, e);
         } 

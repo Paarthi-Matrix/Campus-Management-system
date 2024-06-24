@@ -6,20 +6,45 @@
  * </p>
  *
  */
-
 package com.ideas2it.cms.model;
 
 import java.util.Set;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "student_database")
 public class Student {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "student_id")
     private int studentId;
+
+    @Column(name = "name")
     private String studentName;
+
+    @Column(name = "roll_number")
     private String rollNumber;
+
+    @Column(name = "blood_group")
     private String bloodGroup;
+
+    @Column(name = "date_of_birth")
     private String dateOfBirth;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "grade_id", nullable = false)
     private Grade grade;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "student_specialclass",
+            joinColumns = @JoinColumn(name = "student_id", nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "specialclass_id", nullable = false)
+    )
     private Set<SpecialClass> specialClass;
+
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
     private UniformMeasurement uniformMeasurement;
 
     public Student(String studentName, String rollNumber, String bloodGroup, String dateOfBirth) {

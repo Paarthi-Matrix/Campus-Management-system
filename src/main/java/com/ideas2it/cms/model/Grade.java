@@ -1,15 +1,32 @@
 package com.ideas2it.cms.model;
 
 import java.util.Set;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "grade_database")
 public class Grade {
 
+    @Id
+    @Column(name = "grade_id")
     private String gradeId;
+
+    @Column(name = "vacancy")
     private int vacancy;
+
+    @Column(name = "number_of_students")
     private int numberOfStudents;
+
+    @Column(name = "standard")
     private String standard;
-    private String section; 
+
+    @Column(name = "section")
+    private String section;
+
+    @OneToMany(mappedBy = "grade", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Student> students;
+
+    public Grade() {}
 
     public Grade(String gradeId, int vacancy, int numberOfStudents, String standard, String section) {
         this.gradeId = gradeId;
@@ -19,7 +36,6 @@ public class Grade {
         this.section = section;
     }
 
-    public Grade() {}
 
     public String getGradeId() {
         return gradeId;
