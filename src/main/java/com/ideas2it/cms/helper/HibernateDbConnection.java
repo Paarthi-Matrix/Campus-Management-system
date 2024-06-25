@@ -5,7 +5,8 @@ import com.ideas2it.cms.customexception.HibernateDbConnectionException;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -17,6 +18,7 @@ import org.hibernate.cfg.Configuration;
  */
 public class HibernateDbConnection {
 
+    private static final Logger logger = LoggerFactory.getLogger(HibernateDbConnection.class);
     private static HibernateDbConnection instance;
     private SessionFactory sessionFactory;
 
@@ -29,7 +31,9 @@ public class HibernateDbConnection {
      */
     private HibernateDbConnection() {
         try {
-            Dotenv dotenv = Dotenv.configure().directory("./src/main/resources").load();
+            Dotenv dotenv = Dotenv.configure().load();
+            String logPath = dotenv.get("LOG_PATH");
+            System.setProperty("LOG_PATH", logPath);
             Configuration configuration = new Configuration();
             configuration.setProperty("hibernate.connection.driver_class", dotenv.get("DB_DRIVER_CONNECTOR"));
             configuration.setProperty("hibernate.connection.url", dotenv.get("DB_URL"));
@@ -39,8 +43,9 @@ public class HibernateDbConnection {
             sessionFactory = configuration.buildSessionFactory();
 
         } catch (Throwable e) {
-            String errorMessage = "Error occurred while configuring SessionFactory. Please try again!";
-            throw new HibernateDbConnectionException(errorMessage, e);
+                String errorMessage = "Error occurred while configuring SessionFactory. " +
+                                      " Please try again!";
+                logger.error(errorMessage);
         }
     }
 

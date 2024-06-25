@@ -1,0 +1,6 @@
+2024-06-25 18:37:37 INFO  StudentController:33 - The application entered the inserting the data phase
+2024-06-25 18:38:12 INFO  StudentController:64 - Adding student Ram
+2024-06-25 18:38:13 INFO  StudentController:74 - Ram is added to the student database and assigned to 6th standard A section..!
+2024-06-25 18:38:15 INFO  StudentController:106 - Student Ram successfully associated to special class!
+2024-06-25 18:38:21 INFO  StudentController:125 - Student Ram uniform details entered successfully!
+2024-06-25 18:40:13 INFO  StudentController:33 - The application entered the inserting the data phase

@@ -5,11 +5,15 @@ import java.util.List;
 import java.util.Scanner;
 import com.ideas2it.cms.customexception.GradeDatabaseException;
 import com.ideas2it.cms.customexception.HibernateDbConnectionException;
+import com.ideas2it.cms.helper.HibernateDbConnection;
 import com.ideas2it.cms.model.Grade;
 import com.ideas2it.cms.service.GradeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GradeController {
 
+    private static final Logger logger = LoggerFactory.getLogger(GradeController.class);
     private GradeService gradeService = new GradeService();
     private Scanner scanner = new Scanner(System.in);
 
@@ -48,7 +52,7 @@ public class GradeController {
                    validInput = true;
                    break;
                default:
-                   System.out.println("Invalid input. Kindly enter Yes/Y or No/N.");
+                   logger.warn("Invalid input. Kindly enter Yes/Y or No/N.");
                    System.out.print("Do you want to get the students by both grade and section? (Yes/Y or No/N): ");
                    break;
             }
@@ -57,7 +61,7 @@ public class GradeController {
         try {
             grades = gradeService.getGradeInfo(requestedGrade);
         } catch (GradeDatabaseException | HibernateDbConnectionException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
 
         // Print the header for the student list

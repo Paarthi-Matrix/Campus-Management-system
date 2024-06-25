@@ -8,19 +8,21 @@
 package com.ideas2it.cms.controller;
 
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 import com.ideas2it.cms.customexception.StudentDatabaseException;
-import com.ideas2it.cms.customexception.HibernateDbConnectionException;
 import com.ideas2it.cms.model.Grade;
 import com.ideas2it.cms.model.Student;
 import com.ideas2it.cms.service.StudentService;
 import com.ideas2it.cms.util.DateUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StudentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
     private StudentService studentService = new StudentService();
     private static Scanner scanner = new Scanner(System.in);
 
@@ -28,6 +30,7 @@ public class StudentController {
      * Add a new student to the database.
      */
     public void addStudent() {
+        logger.info("The application entered the inserting the data phase");
         String name;
         String dateOfBirth;
         String bloodGroup;
@@ -44,7 +47,8 @@ public class StudentController {
         dateOfBirth = scanner.nextLine();
         if (!DateUtil.checkValidDate(dateOfBirth, "dd/MM/yyyy")) {
             while (true) {
-                System.out.print("Invalid date..Kindly enter the valid date in format of (dd/MM/yyyy)");
+                logger.warn("Invalid date..");
+                System.out.println("Kindly enter the valid date in format of (dd/MM/yyyy)");
                 dateOfBirth = scanner.nextLine();
                 if (DateUtil.checkValidDate(dateOfBirth, "dd/MM/yyyy")) {
                     break;
@@ -57,17 +61,17 @@ public class StudentController {
         gradePreference = scanner.nextInt();
         Grade grade = null;
         try {
-           grade = studentService.getPreferedGrade(gradePreference);
+            logger.info("Adding student {}", name);
+            grade = studentService.getPreferedGrade(gradePreference);
         } catch (StudentDatabaseException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
         if (grade == null) {
-            System.out.println("No vacancy is available in any of the sections in grade " + gradePreference + " try another grade!");
-            return;
+            logger.warn("No vacancy is available for the prefered grade {}", gradePreference);
         }
         gradeId = grade.getGradeId();
         Student student = studentService.addStudent(name, dateOfBirth, bloodGroup, gradeId, grade);
-        System.out.println(name + " is added to the student database and assigned to " + student.getGrade().getStandard() +
+        logger.info(name + " is added to the student database and assigned to " + student.getGrade().getStandard() +
                 "th standard " + student.getGrade().getSection() + " section..!");
         System.out.println("-------------------------------------------------------------------------------------------------");
         System.out.println("The Special classes available are given below");
@@ -95,11 +99,11 @@ public class StudentController {
         try {
             studentService.associateStudentToSpecialClass(student, specialClassPreference);
         } catch (StudentDatabaseException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
         System.out.println();
         System.out.println("===============================================");
-        System.out.println("Student successfully associated to special class!");
+        logger.info("Student {} successfully associated to special class!", student.getStudentName());
         System.out.println();
         System.out.println("===============================================");
         System.out.println("   Student Uniform Measurement Details");
@@ -116,14 +120,16 @@ public class StudentController {
         try {
             studentService.addUniformMeasurementToStudent(student, shirtSize, pantSize, shoeSize);
         } catch (StudentDatabaseException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
+        logger.info("Student {} uniform details entered successfully!", student.getStudentName());
     }
 
     /**
      * Delete a student from the database based on roll number.
      */
     public void deleteStudent() {
+        logger.info("The application entered the deleting the record phase");
         System.out.print("Enter student roll number that to be deleted: ");
         String rollNumber = scanner.nextLine();
         Student student = null;
@@ -131,19 +137,20 @@ public class StudentController {
         try {
             student = studentService.getAndDeleteStudentByRollNumber(rollNumber);
         } catch (StudentDatabaseException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
         
         if (student == null) {
-            System.out.println("No such student with roll number " + rollNumber + " is found in the database!");
+            logger.warn("No such student with roll number {} is found in the database!", rollNumber);
         } else {
-            System.out.println("Student " + student.getStudentName() + 
+            logger.info("Student " + student.getStudentName() +
                                " with roll number " + rollNumber +
                                " is deleted successfully!");
         }
     }
 
     public void getStudentByGrade() {
+        logger.info("The application entered the process of fetching of getting the grade by student.");
         String requestedGrade = " ";
         String actionPreference;
         boolean validInput = false;
@@ -170,7 +177,7 @@ public class StudentController {
                     validInput = true;
                     break;
                 default:
-                    System.out.println("Invalid input. Kindly enter Yes/Y or No/N.");
+                    logger.warn("Invalid input. Kindly enter Yes/Y or No/N.");
                     System.out.print("Do you want to get the students by both grade and section? (Yes/Y or No/N): ");
                     break;
              }
@@ -179,7 +186,7 @@ public class StudentController {
          try {
              students = studentService.getStudentByGrade(requestedGrade);
          } catch (StudentDatabaseException e ) {
-             System.out.println(e.getMessage());
+             logger.error(e.getMessage());
          }
          // Print the header for the student list
          System.out.println();

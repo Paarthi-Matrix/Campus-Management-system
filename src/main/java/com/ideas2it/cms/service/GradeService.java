@@ -6,6 +6,9 @@ import com.ideas2it.cms.customexception.GradeDatabaseException;
 import com.ideas2it.cms.dao.GradeDAO;
 import com.ideas2it.cms.model.Grade;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * <p>
@@ -20,6 +23,7 @@ import com.ideas2it.cms.model.Grade;
 
 public class GradeService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GradeService.class);
     private GradeDAO gradeDao = new GradeDAO();
 
     /**
@@ -36,7 +40,8 @@ public class GradeService {
     public Grade getPreferedGrade(int gradePreference) {
         try {
             return gradeDao.getPreferedGrade(gradePreference);
-        } catch (GradeDatabaseException e) {          
+        } catch (GradeDatabaseException e) {
+            logger.warn("The `getPreferedGrade()` will return `null`");
             return null;
         }  
     }

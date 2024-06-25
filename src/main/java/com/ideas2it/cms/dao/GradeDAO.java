@@ -12,6 +12,8 @@ import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -23,6 +25,7 @@ import org.hibernate.Transaction;
 
 public class GradeDAO {
 
+    private static final Logger logger = LoggerFactory.getLogger(GradeDAO.class);
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();
     private SessionFactory sessionFactory = hibernateDbConnection.getSessionFactory();
 
