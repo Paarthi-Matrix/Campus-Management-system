@@ -62,7 +62,6 @@ public class GradeDAO {
 
             transaction.commit();
         } catch (Exception e) {
-            e.printStackTrace();
             if (transaction != null) {
                 transaction.rollback();
             }

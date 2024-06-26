@@ -11,16 +11,16 @@ public class Grade {
     @Column(name = "grade_id")
     private String gradeId;
 
-    @Column(name = "vacancy")
+    @Column(name = "vacancy", nullable = false, precision = 2)
     private int vacancy;
 
-    @Column(name = "number_of_students")
+    @Column(name = "number_of_students", nullable = false)
     private int numberOfStudents;
 
-    @Column(name = "standard")
+    @Column(name = "standard", nullable = false)
     private String standard;
 
-    @Column(name = "section")
+    @Column(name = "section", nullable = false)
     private String section;
 
     @OneToMany(mappedBy = "grade", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

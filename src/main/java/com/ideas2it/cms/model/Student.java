@@ -20,16 +20,16 @@ public class Student {
     @Column(name = "student_id")
     private int studentId;
 
-    @Column(name = "name")
+    @Column(name = "name", length = 30, nullable = false)
     private String studentName;
 
-    @Column(name = "roll_number")
+    @Column(name = "roll_number", length = 6, nullable = false)
     private String rollNumber;
 
-    @Column(name = "blood_group")
+    @Column(name = "blood_group", length = 5, nullable = false)
     private String bloodGroup;
 
-    @Column(name = "date_of_birth")
+    @Column(name = "date_of_birth", length = 10, nullable = false)
     private String dateOfBirth;
 
     @ManyToOne(fetch = FetchType.LAZY)

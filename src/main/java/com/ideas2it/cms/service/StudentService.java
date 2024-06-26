@@ -1,20 +1,17 @@
 package com.ideas2it.cms.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import com.ideas2it.cms.customexception.StudentDatabaseException;
-import com.ideas2it.cms.customexception.HibernateDbConnectionException;
 import com.ideas2it.cms.dao.StudentDAO;
 import com.ideas2it.cms.model.Grade;
 import com.ideas2it.cms.model.SpecialClass;
 import com.ideas2it.cms.model.UniformMeasurement;
-import com.ideas2it.cms.service.GradeService;
-import com.ideas2it.cms.service.SpecialClassService;
 import com.ideas2it.cms.model.Student;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  *
  * <p>
@@ -26,6 +23,7 @@ import com.ideas2it.cms.model.Student;
 
 public class StudentService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SpecialClassService.class);
     private GradeService gradeService = new GradeService();
     private StudentDAO studentDao = new StudentDAO();
     private SpecialClassService specialClassService = new SpecialClassService();
@@ -40,7 +38,9 @@ public class StudentService {
      * @param dateOfBirth 
      *        The date of birth of the student. Should be in formate of (dd/MM/yyyy). 
      * @param bloodGroup 
-     *        The blood group of the student. Everything should be uppercase. 
+     *        The blood group of the student.
+     *        They must be a valid blood group (A+VE, A-VE, B+VE, B-VE, AB+VE, AB-VE, O+VE, O-VE).
+     *        CASE INSENSITIVE
      * @param gradeAllocated
      *        The grade allocated to the student.
      * @param grade 
@@ -86,11 +86,15 @@ public class StudentService {
      *
      */
     private String generateRollNumber(String gradeIDAllocated, int rollNumberSuffix) {
+        logger.debug("Generating the roll number for grade {}", gradeIDAllocated);
         if (rollNumberSuffix + 1 >= 100) {
+            logger.info("Roll number generated successfully");
             return gradeIDAllocated + String.format("%01d", ++rollNumberSuffix);
         } else if (rollNumberSuffix + 1 >= 10) {
+            logger.info("Roll number generated successfully");
             return gradeIDAllocated + String.format("%02d", ++rollNumberSuffix);
         } else {
+            logger.info("Roll number generated successfully");
             return gradeIDAllocated + String.format("%03d", ++rollNumberSuffix);
         }
     }

@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.text.ParseException; 
 import java.time.Period;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -18,6 +20,7 @@ import java.time.ZoneId;
 
 public class DateUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
   /**
      * <p>
      * Checks if the given date by the user is a valid date.
@@ -41,7 +44,7 @@ public class DateUtil {
      * 
      */
      public static boolean checkValidDate(String dateStr, String dateFormat) {
-
+         logger.debug("Validating date");
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setLenient(false); //This turn off the strict parsing of date (strict parsing checks in terms of Timestamp).
 
@@ -87,6 +90,7 @@ public class DateUtil {
      * 
      */
       public static int calculateDifferenceOfTwoDates(String startDateInclusive, String endDateExclusive, String preiodPreference) {
+          logger.debug("Calculating difference between two intervals");
           LocalDate currentDate ;          
           DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

@@ -1,13 +1,13 @@
 package com.ideas2it.cms.service;
 
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Set;
 
-import com.ideas2it.cms.customexception.DatabaseConnectionException;
 import com.ideas2it.cms.customexception.SpecialClassException;
 import com.ideas2it.cms.dao.SpecialClassDAO;
 import com.ideas2it.cms.model.SpecialClass;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -22,6 +22,7 @@ import com.ideas2it.cms.model.SpecialClass;
 
 public class SpecialClassService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SpecialClassService.class);
     private SpecialClassDAO specialClassDAO = new SpecialClassDAO();
 
     /**
@@ -40,6 +41,15 @@ public class SpecialClassService {
      *         Arises if an error occurs while updating vacancy and number of students.
      */
     public Set<SpecialClass> getAndUpdateVacancyOfSpecialClass(int[] specialClassPreference, boolean action) {
+        if (action) {
+            logger.info("Updating the number of student and " +
+                    "vacancy for special classes after performing addition " +
+                    "of student record" );
+        } else {
+            logger.info("Updating the number of student and " +
+                    "vacancy for grade after performing deletion " +
+                    "of a student record ");
+        }
         return specialClassDAO.getAndUpdateVacancyOfSpecialClass(specialClassPreference, action);
     }
 }

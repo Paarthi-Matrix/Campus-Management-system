@@ -20,16 +20,16 @@ public class SpecialClass {
     @Column(name = "specialclass_id")
     private int specialClassId;
 
-    @Column(name = "class_name")
+    @Column(name = "class_name", length = 30, nullable = false)
     private String className;
 
-    @Column(name = "vacancy")
+    @Column(name = "vacancy", nullable = false, precision = 2)
     private int vacancy;
 
-    @Column(name = "number_of_students")
+    @Column(name = "number_of_students", nullable = false, precision = 2)
     private int numberOfStudents;
 
-    @Column(name = "handling_staff")
+    @Column(name = "handling_staff", length = 30, nullable = false)
     private String handlingStaff;
 
     @ManyToMany(mappedBy = "specialClass", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

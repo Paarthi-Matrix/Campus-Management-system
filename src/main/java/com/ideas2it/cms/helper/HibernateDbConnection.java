@@ -44,7 +44,7 @@ public class HibernateDbConnection {
 
         } catch (Throwable e) {
                 String errorMessage = "Error occurred while configuring SessionFactory. " +
-                                      " Please try again!";
+                                      " Check for credentials and please try again!";
                 logger.error(errorMessage);
         }
     }

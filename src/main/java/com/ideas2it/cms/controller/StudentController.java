@@ -15,6 +15,7 @@ import com.ideas2it.cms.customexception.StudentDatabaseException;
 import com.ideas2it.cms.model.Grade;
 import com.ideas2it.cms.model.Student;
 import com.ideas2it.cms.service.StudentService;
+import com.ideas2it.cms.util.BloodgroupUtil;
 import com.ideas2it.cms.util.DateUtil;
 
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ public class StudentController {
      * Add a new student to the database.
      */
     public void addStudent() {
-        logger.info("The application entered the inserting the data phase");
+        logger.info("The application entered the insertion phase");
         String name;
         String dateOfBirth;
         String bloodGroup;
@@ -47,7 +48,7 @@ public class StudentController {
         dateOfBirth = scanner.nextLine();
         if (!DateUtil.checkValidDate(dateOfBirth, "dd/MM/yyyy")) {
             while (true) {
-                logger.warn("Invalid date..");
+                logger.warn("User entered invalid date {}", dateOfBirth);
                 System.out.println("Kindly enter the valid date in format of (dd/MM/yyyy)");
                 dateOfBirth = scanner.nextLine();
                 if (DateUtil.checkValidDate(dateOfBirth, "dd/MM/yyyy")) {
@@ -56,7 +57,26 @@ public class StudentController {
             }
         }
         System.out.print("Enter the blood group: ");
-        bloodGroup = scanner.nextLine();
+        bloodGroup = BloodgroupUtil.validateBloodGroup(scanner.nextLine());
+        if (null == bloodGroup) {
+            while (true) {
+                System.out.println("Enter a valid blood group");
+                System.out.println("The valid blood group are given below");
+                System.out.println("A+VE");
+                System.out.println("A-VE");
+                System.out.println("B+VE");
+                System.out.println("B-VE");
+                System.out.println("AB+VE");
+                System.out.println("AB-VE");
+                System.out.println("O+VE");
+                System.out.print("O-VE");
+
+                bloodGroup = BloodgroupUtil.validateBloodGroup(scanner.nextLine());
+                if (null != bloodGroup) {
+                    break;
+                }
+            }
+        }
         System.out.print("Enter the Grade: ");
         gradePreference = scanner.nextInt();
         Grade grade = null;
@@ -71,8 +91,8 @@ public class StudentController {
         }
         gradeId = grade.getGradeId();
         Student student = studentService.addStudent(name, dateOfBirth, bloodGroup, gradeId, grade);
-        logger.info(name + " is added to the student database and assigned to " + student.getGrade().getStandard() +
-                "th standard " + student.getGrade().getSection() + " section..!");
+        logger.info(name + " is added to the student database and assigned to " +
+                student.getGrade().getStandard() + "th standard " + student.getGrade().getSection() + " section..!");
         System.out.println("-------------------------------------------------------------------------------------------------");
         System.out.println("The Special classes available are given below");
         int[] specialClassPreference = new int[specialclassAssigningCount];
@@ -95,8 +115,8 @@ public class StudentController {
             scanner.nextLine();
             System.out.println("===============================================");
         }
-
         try {
+            logger.info("Asoociaitng student {} to the prefered special classes", name);
             studentService.associateStudentToSpecialClass(student, specialClassPreference);
         } catch (StudentDatabaseException e) {
             logger.error(e.getMessage());

@@ -21,13 +21,13 @@ public class UniformMeasurement {
     @Column(name = "roll_number")
     private String rollNumber;
 
-    @Column(name = "shirt_size")
+    @Column(name = "shirt_size", length = 4, nullable = false)
     private String shirtSize;
 
-    @Column(name = "pant_size")
+    @Column(name = "pant_size", nullable = false)
     private int pantSize;
 
-    @Column(name = "shoe_size")
+    @Column(name = "shoe_size", nullable = false)
     private int shoeSize;
 
     @OneToOne

@@ -61,7 +61,17 @@ public class GradeService {
      *         If an error occurs while updating the number of students and vacancy availability.
      */
     public void updateNoOfStudentsAndVacancyAvailablity(String gradeIDAllocated, boolean action) {
-        gradeDao.updateNoOfStudentsAndVacancyAvailablity(gradeIDAllocated, action);              
+        if (action) {
+            logger.info("Updating the number of student and " +
+                    "vacancy for grade {} after performing addition " +
+                    "of a student record", gradeIDAllocated );
+        } else {
+            logger.info("Updating the number of student and " +
+                    "vacancy for grade {} after performing deletion " +
+                    "of a student record ", gradeIDAllocated );
+        }
+        gradeDao.updateNoOfStudentsAndVacancyAvailablity(gradeIDAllocated, action);
+        logger.info("Successfully updated the number of students and vacancy");
     }
 
     /**
@@ -77,6 +87,7 @@ public class GradeService {
      *         If an error occurs while fetching the number of studentsfrom grade database.
      */
     public int getNumberOfStudents(String gradeAllocated) {
+        logger.debug("Fetching number of students from the database");
         return gradeDao.getNumberOfStudents(gradeAllocated);
     }
 
@@ -94,6 +105,7 @@ public class GradeService {
      *         Arises while geting the entire grade detalis.
      */
     public List<Grade> getGradeInfo(String requestedGrade) {
-       return gradeDao.getGradeInfo(requestedGrade);
+        logger.debug("Fetching grade info for {}", requestedGrade);
+        return gradeDao.getGradeInfo(requestedGrade);
     }
 }

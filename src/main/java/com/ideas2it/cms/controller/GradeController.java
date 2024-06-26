@@ -25,7 +25,6 @@ public class GradeController {
      * </p>
      */ 
     public void getGradeInfo() {
-       String gradeId;
        String requestedGrade = "";
        boolean validInput = false;
        List<Grade> grades = new ArrayList<>();;
@@ -44,7 +43,6 @@ public class GradeController {
                    requestedGrade = scanner.nextLine().trim();
                    validInput = true;
                    break;
-
                case "n":
                case "no":
                    System.out.print("Enter the standard: ");
@@ -52,25 +50,27 @@ public class GradeController {
                    validInput = true;
                    break;
                default:
-                   logger.warn("Invalid input. Kindly enter Yes/Y or No/N.");
+                   logger.warn("Invalid input given by the user {}", actionPreference);
+                   System.out.println("Kindly enter Yes/Y or No/N.");
                    System.out.print("Do you want to get the students by both grade and section? (Yes/Y or No/N): ");
                    break;
             }
         }
 
-        try {
-            grades = gradeService.getGradeInfo(requestedGrade);
-        } catch (GradeDatabaseException | HibernateDbConnectionException e) {
+       try {
+           logger.debug("Fetching the grade according to the prefered grade {}...", requestedGrade);
+           grades = gradeService.getGradeInfo(requestedGrade);
+           logger.debug("Fetching of grade {} is successfully done!...", requestedGrade);
+       } catch (GradeDatabaseException | HibernateDbConnectionException e) {
             logger.error(e.getMessage());
-        }
+       }
 
-        // Print the header for the student list
+       // Print the header for the student list
         System.out.println();
         System.out.println("===============================================");
         System.out.printf("%-15s %-15s %-15s %-15s %-15s%n", "Grade ID", "Vacancy", "Number of Students", "Standard", 
                                                                    "Section");
         System.out.println("===============================================");
-
         for (Grade grade : grades) {
             System.out.printf("%-15s %-15s %-15s %-15s %-15s%n",
             grade.getGradeId(),
@@ -82,4 +82,3 @@ public class GradeController {
         System.out.println("===============================================");
      }          
 }
-
