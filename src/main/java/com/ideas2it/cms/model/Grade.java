@@ -23,9 +23,6 @@ public class Grade {
     @Column(name = "section", nullable = false)
     private String section;
 
-    @OneToMany(mappedBy = "grade", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Student> students;
-
     public Grade() {}
 
     public Grade(String gradeId, int vacancy, int numberOfStudents, String standard, String section) {
@@ -76,11 +73,4 @@ public class Grade {
         this.section = section;
     }
 
-    public Set<Student> getStudents() {
-        return students;
-    }
-
-    public void setStudents(Set<Student> students) {
-        this.students = students;
-    }
 }

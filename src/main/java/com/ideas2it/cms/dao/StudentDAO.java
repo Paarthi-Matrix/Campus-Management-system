@@ -12,6 +12,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>
@@ -23,6 +24,7 @@ import org.hibernate.query.Query;
  * </p>
  */
 
+@Repository
 public class StudentDAO {
 
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();

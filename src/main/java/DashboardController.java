@@ -1,75 +1,72 @@
-/*
- * MainController
- *
- * Version 1.0.0
- *
- */
+package com.ideas2it.cms;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-import com.ideas2it.cms.controller.*;
+import com.ideas2it.cms.controller.GradeController;
+import com.ideas2it.cms.controller.StudentController;
 import com.ideas2it.cms.helper.HibernateDbConnection;
 
-public class DashboardController {
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+
+@SpringBootApplication
+@ComponentScan(basePackages = "com.ideas2it.cms")
+public class DashboardController implements CommandLineRunner {
 
     private static Scanner scanner = new Scanner(System.in);
-    private StudentController studentController = new StudentController();
-    private GradeController gradeController = new GradeController();
+
+    @Autowired
+    private StudentController studentController;
+
+    @Autowired
+    private GradeController gradeController;
 
     public static void main(String[] args) {
-        DashboardController dashboardController = new DashboardController();
-        dashboardController.startApplication();
+        SpringApplication.run(DashboardController.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
+        startApplication();
     }
 
     private void startApplication() {
         boolean loopCondition = true;
 
         while (loopCondition) {
-            printMenu();
 
             try {
                 int actionStatus = scanner.nextInt();
-                scanner.nextLine(); 
+                scanner.nextLine();
                 switch (actionStatus) {
                     case 1:
-                        studentController.addStudent();
+                        //studentController.addStudent();
                         break;
                     case 2:
-                        studentController.deleteStudent();
+                        //studentController.deleteStudent();
                         break;
                     case 3:
-                        studentController.getStudentByGrade();
-                        break;
+                        //studentController.getAllStudents();
                     case 4:
-                        gradeController.getGradeInfo();
+                        //studentController.getStudentByGrade();
                         break;
                     case 5:
+                        gradeController.getGradeInfo();
+                        break;
+                    case 6:
                         HibernateDbConnection.shutdown();
                         loopCondition = false;
                         break;
                     default:
-                        System.out.println("Invalid input. Please enter a number between 1 and 6.");
+                        System.out.println("Invalid input. Please enter a number between 1 and 5.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
                 scanner.next(); // clear the invalid input
             }
         }
-    }
-
-    private void printMenu() {
-        System.out.println("===================================================");
-        System.out.println("|                                                 |");
-        System.out.println("|              Campus Management System           |");
-        System.out.println("|                                                 |");
-        System.out.println("===================================================");
-        System.out.println("|    Enter the action to perform:                 |");
-        System.out.println("|    1 - Add a new student                        |");
-        System.out.println("|    2 - Delete a student                         |");
-        System.out.println("|    3 - Get students by grade                    |");
-        System.out.println("|    4 - Get grade information                    |");
-        System.out.println("|    5 - Exit Application                         |");
-        System.out.println("===================================================");
-        System.out.print("Select an option: ");
     }
 }

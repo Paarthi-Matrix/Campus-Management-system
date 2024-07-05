@@ -5,15 +5,15 @@ import java.util.List;
 
 import com.ideas2it.cms.customexception.HibernateDbConnectionException;
 import com.ideas2it.cms.customexception.GradeDatabaseException;
-import com.ideas2it.cms.helper.HibernateDbConnection;
 import com.ideas2it.cms.model.Grade;
-
+import com.ideas2it.cms.helper.HibernateDbConnection;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
 
 
 /**
@@ -23,9 +23,10 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 
+@Repository
 public class GradeDAO {
 
-    private static final Logger logger = LoggerFactory.getLogger(GradeDAO.class);
+    private static final Logger logger = LogManager.getLogger(GradeDAO.class);
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();
     private SessionFactory sessionFactory = hibernateDbConnection.getSessionFactory();
 
@@ -59,9 +60,9 @@ public class GradeDAO {
                     break;
                 }
             }
-
             transaction.commit();
         } catch (Exception e) {
+            e.printStackTrace();
             if (transaction != null) {
                 transaction.rollback();
             }

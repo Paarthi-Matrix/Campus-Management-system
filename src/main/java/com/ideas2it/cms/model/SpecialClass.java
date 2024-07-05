@@ -32,8 +32,6 @@ public class SpecialClass {
     @Column(name = "handling_staff", length = 30, nullable = false)
     private String handlingStaff;
 
-    @ManyToMany(mappedBy = "specialClass", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Student> students;
 
     // Constructors, getters, and setters
     public SpecialClass() {}
@@ -85,11 +83,4 @@ public class SpecialClass {
         this.handlingStaff = handlingStaff;
     }
 
-    public Set<Student> getStudents() {
-        return this.students;
-    }
-
-    public void setStudents(Set<Student> students) {
-        this.students = students;
-    }
 }

@@ -1,8 +1,8 @@
 /**
- * 
+ *
  * <p>
  * A student object or an entity is defined as a collection of usefull information of individual students.
- * The usefull information contains `studentName`, `rollNumber`, `gradeID`, `grade`, `section`, `bloodGroup`, `dateOfBirth` and `age`.
+ * The usefull information contains studentName, rollNumber, gradeID, grade, section, bloodGroup, dateOfBirth and age.
  * </p>
  *
  */
@@ -32,7 +32,7 @@ public class Student {
     @Column(name = "date_of_birth", length = 10, nullable = false)
     private String dateOfBirth;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "grade_id", nullable = false)
     private Grade grade;
 
@@ -44,7 +44,8 @@ public class Student {
     )
     private Set<SpecialClass> specialClass;
 
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "uniform_id")
     private UniformMeasurement uniformMeasurement;
 
     public Student(String studentName, String rollNumber, String bloodGroup, String dateOfBirth) {
@@ -118,5 +119,8 @@ public class Student {
 
     public void setSpecialClass(Set<SpecialClass> specialClass) {
         this.specialClass = specialClass;
+    }
+
+    public void setSpecialClasses(Set<SpecialClass> specialClasses) {
     }
 }

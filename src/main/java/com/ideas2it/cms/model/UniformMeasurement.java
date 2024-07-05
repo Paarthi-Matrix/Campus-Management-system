@@ -18,8 +18,8 @@ import jakarta.persistence.*;
 public class UniformMeasurement {
 
     @Id
-    @Column(name = "roll_number")
-    private String rollNumber;
+    @Column(name = "id")
+    private String id;
 
     @Column(name = "shirt_size", length = 4, nullable = false)
     private String shirtSize;
@@ -30,25 +30,21 @@ public class UniformMeasurement {
     @Column(name = "shoe_size", nullable = false)
     private int shoeSize;
 
-    @OneToOne
-    @JoinColumn(name = "student_id")
-    private Student student;
-
     // Constructors, getters, and setters
     public UniformMeasurement() {}
 
-    public UniformMeasurement(String rollNumber, String shirtSize, int pantSize, int shoeSize) {
-        this.rollNumber = rollNumber;
+    public UniformMeasurement(String id, String shirtSize, int pantSize, int shoeSize) {
+        this.id = id;
         this.shirtSize = shirtSize;
         this.pantSize = pantSize;
         this.shoeSize = shoeSize;
     }
-    public String getRollNumber() {
-       return this.rollNumber;
+    public String getId() {
+       return this.id;
     }
 
-    public void setRollNumber(String rollNumber) {
-       this.rollNumber = rollNumber;
+    public void setId(String rollNumber) {
+       this.id = id;
     }
 
     public String getShirtSize() {
@@ -73,14 +69,6 @@ public class UniformMeasurement {
 
     public void setShoeSize(int shoeSize) {
         this.shoeSize = shoeSize;
-    }
-
-    public Student getStudent() {
-        return this.student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
     }
 
 }

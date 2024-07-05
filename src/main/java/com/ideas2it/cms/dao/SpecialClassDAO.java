@@ -8,14 +8,15 @@ import java.util.stream.Collectors;
 import java.util.HashSet;
 
 import com.ideas2it.cms.customexception.HibernateDbConnectionException;
-import com.ideas2it.cms.customexception.SpecialClassException;
 import com.ideas2it.cms.helper.HibernateDbConnection;
+import com.ideas2it.cms.customexception.SpecialClassException;
 import com.ideas2it.cms.model.SpecialClass;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 
 
 /**
@@ -26,7 +27,8 @@ import org.hibernate.query.Query;
  * update the vacancy and number of students for special classes.
  * </p>
  */
- 
+
+@Repository
 public class SpecialClassDAO {
 
     private HibernateDbConnection hibernateDbConnection = HibernateDbConnection.getInstance();

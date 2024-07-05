@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import com.ideas2it.cms.customexception.UniformDatabaseException;
 import com.ideas2it.cms.customexception.DatabaseConnectionException;
 import com.ideas2it.cms.model.UniformMeasurement;
+import org.springframework.stereotype.Repository;
 
 /**
  *
@@ -22,6 +23,7 @@ import com.ideas2it.cms.model.UniformMeasurement;
  *
  */
 
+@Repository
 public class UniformMeasurementDAO {
 
 }

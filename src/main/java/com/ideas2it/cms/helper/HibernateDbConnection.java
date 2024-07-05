@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
  * SessionFactory.
  * </p>
  */
+
+
 public class HibernateDbConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateDbConnection.class);
@@ -30,6 +32,7 @@ public class HibernateDbConnection {
      * @throws HibernateDbConnectionException if an error occurs while configuring SessionFactory.
      */
     private HibernateDbConnection() {
+        /**
         try {
             Dotenv dotenv = Dotenv.configure().load();
             String logPath = dotenv.get("LOG_PATH");
@@ -45,8 +48,8 @@ public class HibernateDbConnection {
         } catch (Throwable e) {
                 String errorMessage = "Error occurred while configuring SessionFactory. " +
                                       " Check for credentials and please try again!";
-                logger.error(errorMessage);
-        }
+                logger.error(errorMessage,e);
+        }*/
     }
 
     /**
