@@ -8,6 +8,7 @@
  */
 package com.ideas2it.cms.model;
 
+import java.util.HashSet;
 import java.util.Set;
 import jakarta.persistence.*;
 
@@ -36,17 +37,16 @@ public class Student {
     @JoinColumn(name = "grade_id", nullable = false)
     private Grade grade;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "student_specialclass",
-            joinColumns = @JoinColumn(name = "student_id", nullable = false),
-            inverseJoinColumns = @JoinColumn(name = "specialclass_id", nullable = false)
-    )
-    private Set<SpecialClass> specialClass;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "uniform_id")
     private UniformMeasurement uniformMeasurement;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "student_specialclass",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "specialclass_id")
+    )
+    private Set<SpecialClass> specialClasses = new HashSet<>();
 
     public Student(String studentName, String rollNumber, String bloodGroup, String dateOfBirth) {
         this.studentName = studentName;
@@ -114,13 +114,10 @@ public class Student {
     }
 
     public Set<SpecialClass> getSpecialClass() {
-        return this.specialClass;
-    }
-
-    public void setSpecialClass(Set<SpecialClass> specialClass) {
-        this.specialClass = specialClass;
+        return this.specialClasses;
     }
 
     public void setSpecialClasses(Set<SpecialClass> specialClasses) {
+        this.specialClasses = specialClasses;
     }
 }

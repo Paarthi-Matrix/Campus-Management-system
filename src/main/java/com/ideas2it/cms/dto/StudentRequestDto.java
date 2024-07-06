@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -16,5 +18,5 @@ public class StudentRequestDto {
     private String dateOfBirth;
     private String gradePreferred;
     private UniformRequestDto uniformRequestDto;
-    private SpecialClassRequestDto specialClassRequestDto;
+    private List<Integer> specialClasses;
 }

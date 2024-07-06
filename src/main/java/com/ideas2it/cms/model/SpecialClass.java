@@ -8,6 +8,7 @@
  */
 package com.ideas2it.cms.model;
 
+import java.util.HashSet;
 import java.util.Set;
 import jakarta.persistence.*;
 
@@ -32,6 +33,8 @@ public class SpecialClass {
     @Column(name = "handling_staff", length = 30, nullable = false)
     private String handlingStaff;
 
+    @ManyToMany(mappedBy = "specialClasses", fetch = FetchType.LAZY)
+    private Set<Student> students = new HashSet<>();
 
     // Constructors, getters, and setters
     public SpecialClass() {}
@@ -83,4 +86,11 @@ public class SpecialClass {
         this.handlingStaff = handlingStaff;
     }
 
+    public Set<Student> getStudents() {
+        return students;
+    }
+
+    public void setStudents(Set<Student> students) {
+        this.students = students;
+    }
 }

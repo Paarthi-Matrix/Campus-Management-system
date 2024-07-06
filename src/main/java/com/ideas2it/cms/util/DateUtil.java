@@ -7,15 +7,31 @@ import java.text.ParseException;
 import java.time.Period;
 import java.text.SimpleDateFormat;
 
+import com.ideas2it.cms.helper.DateValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 /**
  * <p>
- * Used as utils for functionalities regarding date.
+ * Utility class for various date-related functionalities.
+ * This class provides methods to validate date strings, check if a given date is valid,
+ * and calculate the difference between two dates in terms of years, months, or days.
  * </p>
- *
+ * <p>
+ * The primary functionalities include:
+ * <ul>
+ *     <li>Validating whether a given date string conforms to a specified format.</li>
+ *     <li>Calculating the difference between two dates or between a given date and the current date.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * The date format expected in methods should be in one of the standard formats
+ * like "dd/MM/yyyy", "yyyy/MM/dd", "MM/dd/yyyy", and the utility does not support timestamp formats.
+ * </p>
+ * <p>
+ * The calculations are based on the Java 8 Date-Time API (java.time).
+ * </p>
  */
 
 public class DateUtil {
@@ -24,7 +40,7 @@ public class DateUtil {
   /**
      * <p>
      * Checks if the given date by the user is a valid date.
-     * It is achieved by using SimpleDateFormat. The date string is parsed by SimpleDateFomat.
+     * It is achieved by using SimpleDateFormat. The date string is parsed by SimpleDateFormat.
      * If the date is in invalid format a `ParseException` occurs.
      * This is handled in try catch block by following ways,
      * If the date is parsed successfully true is returned.
@@ -39,22 +55,31 @@ public class DateUtil {
      *        The date format can be `dd/mm/yyyy`, `yyyy/MM/dd`, `MM/dd/yyyy`
      *        SHOULD NOT be in format of Timestamp or Month name-Day-Year with no leading zeros (February 17, 2009).
      * @return boolean
-     *         If the user gives the dateStr in corrcet format as specified, returns true
-     *         Else false is returned.
+     *         If the user gives the dateStr in correct format as specified, returns true
+     *         Else false is returned if the given date is in the future. Example: Greater than current date.
      * 
      */
-     public static boolean checkValidDate(String dateStr, String dateFormat) {
+     public static DateValidationResult checkValidDateAndAge(String dateStr, String dateFormat) {
          logger.debug("Validating date");
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setLenient(false); //This turn off the strict parsing of date (strict parsing checks in terms of Timestamp).
-
         try {
             Date date = sdf.parse(dateStr);
-            return true;
-        } catch (ParseException e) { 
-            return false;
-	}
+            if(date.after(new Date())){
+                return DateValidationResult.FUTURE_DATE;
+            } else if(calculateDifferenceOfTwoDates(dateStr, null, "Years") > 18) {
+                return DateValidationResult.OVER_18;
+            } else if(calculateDifferenceOfTwoDates(dateStr, null, "Years") < 3) {
+                return DateValidationResult.UNDER_3;
+            } else {
+                return DateValidationResult.VALID_DATE;
+            }
+        } catch (ParseException e) {
+            return DateValidationResult.INVALID_DATE;
+	    }
      }
+
+
    
      /**
      * <p>

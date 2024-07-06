@@ -18,8 +18,12 @@ import jakarta.persistence.*;
 public class UniformMeasurement {
 
     @Id
-    @Column(name = "id")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "uniform_id")
+    private int uniformId;
+
+    @Column(name = "roll_number")
+    private String rollNumber;
 
     @Column(name = "shirt_size", length = 4, nullable = false)
     private String shirtSize;
@@ -33,18 +37,18 @@ public class UniformMeasurement {
     // Constructors, getters, and setters
     public UniformMeasurement() {}
 
-    public UniformMeasurement(String id, String shirtSize, int pantSize, int shoeSize) {
-        this.id = id;
+    public UniformMeasurement(String rollNumber, String shirtSize, int pantSize, int shoeSize) {
+        this.rollNumber = rollNumber;
         this.shirtSize = shirtSize;
         this.pantSize = pantSize;
         this.shoeSize = shoeSize;
     }
-    public String getId() {
-       return this.id;
+    public String getRollNumber() {
+       return this.rollNumber;
     }
 
-    public void setId(String rollNumber) {
-       this.id = id;
+    public void setRollNumber(String rollNumber) {
+       this.rollNumber = rollNumber;
     }
 
     public String getShirtSize() {

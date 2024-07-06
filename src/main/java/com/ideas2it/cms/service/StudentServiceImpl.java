@@ -20,6 +20,9 @@ import com.ideas2it.cms.util.DateUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,59 +88,25 @@ public class StudentServiceImpl implements StudentService {
         }
         rollNumberSuffix = grade.getNumberOfStudents();
         rollNumber = generateRollNumber(grade.getStandard() + grade.getSection(),
-                rollNumberSuffix);
+                      rollNumberSuffix);
         student = new Student(studentRequestDto.getStudentName(), rollNumber, studentRequestDto.getBloodGroup(), studentRequestDto.getDateOfBirth());
         student.setGrade(grade);
 
         gradeServiceImpl.updateNoOfStudentsAndVacancyAvailablity(grade.getGradeId(), true);
-        List<Integer> specialClassPreference = studentRequestDto.getSpecialClassRequestDto().getSpecialClassPreference();
+        logger.debug("Association of student {} to the preferred special classes", studentRequestDto.getStudentName());
+        List<Integer> specialClassPreference = studentRequestDto.getSpecialClasses();
         List<SpecialClass> specialClasses = specialclassRepo.findBySpecialClassId(specialClassPreference);
         student.setSpecialClasses(ConversionUtil.convertArrayListToSet(specialClasses));
+
+        logger.info("Association of student {} to the preferred special classes is successful", studentRequestDto.getStudentName());
+        logger.debug("Now setting uniform measurement to the preferred special classes");
         specialClassServiceImpl.UpdateVacancyOfSpecialClass(specialClassPreference, true);
-        student.setUniformMeasurement(EntityDtoConverter.toUniformMeasurement(studentRequestDto));
-
+        UniformMeasurement uniformMeasurement =EntityDtoConverter.toUniformMeasurement(studentRequestDto, rollNumber);
+        student.setUniformMeasurement(uniformMeasurement);
         studentRepo.save(student);
+        logger.info("Student {} added to database successfully!", studentRequestDto.getStudentName());
 
-        StudentResponceDto studentResponceDto = new StudentResponceDto();
-        studentResponceDto.setStudentName(student.getStudentName());
-        studentResponceDto.setStandard(student.getGrade().getStandard());
-        studentResponceDto.setSection(student.getGrade().getSection());
-        studentResponceDto.setBloodGroup(student.getBloodGroup());
-        studentResponceDto.setDateOfBirth(student.getDateOfBirth());
-        studentResponceDto.setRollNumber(rollNumber);
-        studentResponceDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Year"));
-        studentResponceDto.setGrade(grade);
-        return studentResponceDto;
-    }
-
-    /**
-     *
-     * <p>
-     * Generates a roll number for the student based on the grade ID and roll number suffix.
-     * If the student belongs to 5th grade and "A" section and the student is the 4th student to get added in that grade and section-
-     * then his/her roll number is 5A004 and so on.
-     * </p>
-     *
-     * @param gradeIDAllocated 
-     *        The grade ID allocated to the student.
-     * @param rollNumberSuffix 
-     *        The suffix for the roll number.
-     * @return String 
-     *         The generated roll number.
-     *
-     */
-    private String generateRollNumber(String gradeIDAllocated, int rollNumberSuffix) {
-        logger.debug("Generating the roll number for grade {}", gradeIDAllocated);
-        if (rollNumberSuffix + 1 >= 100) {
-            logger.info("Roll number generated successfully");
-            return gradeIDAllocated + String.format("%01d", ++rollNumberSuffix);
-        } else if (rollNumberSuffix + 1 >= 10) {
-            logger.info("Roll number generated successfully");
-            return gradeIDAllocated + String.format("%02d", ++rollNumberSuffix);
-        } else {
-            logger.info("Roll number generated successfully");
-            return gradeIDAllocated + String.format("%03d", ++rollNumberSuffix);
-        }
+        return EntityDtoConverter.toStudentResponceDto(student, grade, rollNumber);
     }
 
     /**
@@ -165,9 +134,7 @@ public class StudentServiceImpl implements StudentService {
         studentRepo.deleteByRollNumber(rollNumber);
         gradeServiceImpl.updateNoOfStudentsAndVacancyAvailablity(student.getGrade().getGradeId(), false);
         specialClassServiceImpl.UpdateVacancyOfSpecialClass(associatedSpecialClasses, false);
-        DeleteStudentResponceDto deleteStudentResponceDto = new DeleteStudentResponceDto();
-        deleteStudentResponceDto.setStudentName(student.getStudentName());
-        return deleteStudentResponceDto;
+        return EntityDtoConverter.toDeleteStudentResponceDto(student);
     }
 
     /**
@@ -189,19 +156,10 @@ public class StudentServiceImpl implements StudentService {
 
         List<FetchStudentByGradeDto> fetchStudentByGradeDtos = new ArrayList<>();
         for (Student student : students) {
-            FetchStudentByGradeDto dto = new FetchStudentByGradeDto();
-            dto.setStudentName(student.getStudentName());
-            dto.setRollNumber(student.getRollNumber());
-            dto.setBloodGroup(student.getBloodGroup());
-            dto.setDateOfBirth(student.getDateOfBirth());
-            dto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "years"));
-
-            // Add the dto to the list
-            fetchStudentByGradeDtos.add(dto);
+            fetchStudentByGradeDtos.add(EntityDtoConverter.toFetchStudentByGradeDto(student));
         }
         return fetchStudentByGradeDtos;
     }
-
 
     /**
      * <p>
@@ -237,19 +195,43 @@ public class StudentServiceImpl implements StudentService {
         studentRepo.save(existingStudent);
     }
 
-    public List<FetchAllStudentDto> getAllStudents() {
-        List<Student> students = studentRepo.findAll();
+    @Transactional(readOnly = true)
+    public Page<FetchAllStudentDto> getAllStudents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Student> students = studentRepo.findAll(pageable);
+        return students.map(EntityDtoConverter::toFetchAllStudentDto);
+    }
 
-        List<FetchAllStudentDto> fetchAllStudentDtos = new ArrayList<>();
-        for (Student student : students) {
-            FetchAllStudentDto dto = new FetchAllStudentDto();
-            dto.setStudentName(student.getStudentName());
-            dto.setRollNumber(student.getRollNumber());
-            dto.setBloodGroup(student.getBloodGroup());
-            dto.setDateOfBirth(student.getDateOfBirth());
-            dto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "years"));
-            fetchAllStudentDtos.add(dto);
+    @Transactional(readOnly = true)
+    /**
+     * <p>
+     * Generates a roll number for the student based on the grade ID and roll number suffix.
+     * If the student belongs to 5th grade and "A" section and the student is the 4th student to get added in that grade and section-
+     * then his/her roll number is 5A004 and so on.
+     * </p>
+     * <p>
+     *    The roll number is generated based on
+     * </p>
+     *
+     * @param gradeIDAllocated
+     *        The grade ID allocated to the student.
+     * @param rollNumberSuffix
+     *        The suffix for the roll number.
+     * @return String
+     *         The generated roll number.
+     *
+     */
+    private String generateRollNumber(String gradeIDAllocated, int rollNumberSuffix) {
+        logger.debug("Generating the roll number for grade {}", gradeIDAllocated);
+        if (rollNumberSuffix + 1 >= 100) {
+            logger.info("Roll number generated successfully");
+            return gradeIDAllocated + String.format("%01d", ++rollNumberSuffix);
+        } else if (rollNumberSuffix + 1 >= 10) {
+            logger.info("Roll number generated successfully");
+            return gradeIDAllocated + String.format("%02d", ++rollNumberSuffix);
+        } else {
+            logger.info("Roll number generated successfully");
+            return gradeIDAllocated + String.format("%03d", ++rollNumberSuffix);
         }
-        return fetchAllStudentDtos;
     }
 }

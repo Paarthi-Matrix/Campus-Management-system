@@ -1,6 +1,8 @@
 package com.ideas2it.cms.repository;
 
 import com.ideas2it.cms.model.Student;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +20,5 @@ public interface StudentRepo extends JpaRepository<Student, Integer> {
     @Transactional
     @Query("FROM Student student WHERE student.grade.gradeId = :gradeId")
     List<Student> findByGradeId(@Param("gradeId")  String gradeId);
+    Page<Student> findAll(Pageable pageable);
 }
