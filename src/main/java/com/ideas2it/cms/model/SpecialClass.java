@@ -10,6 +10,8 @@ package com.ideas2it.cms.model;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import com.ideas2it.cms.helper.SpecialClassesEnum;
 import jakarta.persistence.*;
 
 @Entity
@@ -21,8 +23,9 @@ public class SpecialClass {
     @Column(name = "specialclass_id")
     private int specialClassId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "class_name", length = 30, nullable = false)
-    private String className;
+    private SpecialClassesEnum className;
 
     @Column(name = "vacancy", nullable = false, precision = 2)
     private int vacancy;
@@ -39,7 +42,7 @@ public class SpecialClass {
     // Constructors, getters, and setters
     public SpecialClass() {}
 
-    public SpecialClass(int specialClassId, String className, int vacancy, int numberOfStudents, String handlingStaff) {
+    public SpecialClass(int specialClassId, SpecialClassesEnum className, int vacancy, int numberOfStudents, String handlingStaff) {
         this.specialClassId = specialClassId;
         this.className = className;
         this.vacancy = vacancy;
@@ -54,11 +57,11 @@ public class SpecialClass {
         this.specialClassId = specialClassId;
     }
 
-    public String getClassName() {
+    public SpecialClassesEnum getClassName() {
         return this.className;
     }
 
-    public void setClassName(String className) {
+    public void setClassName(SpecialClassesEnum className) {
         this.className = className;
     }
 

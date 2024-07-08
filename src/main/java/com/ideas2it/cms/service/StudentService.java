@@ -8,4 +8,5 @@ public interface StudentService {
     StudentResponceDto addStudent(StudentRequestDto studentRequestDto);
     DeleteStudentResponceDto deleteStudentByRollNumber(String rollNumber);
     List<FetchStudentByGradeDto> getStudentByGrade(String standard);
+
 }

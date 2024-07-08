@@ -1,7 +1,6 @@
 package com.ideas2it.cms.dto;
 
 import com.ideas2it.cms.helper.SpecialClassesEnum;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +12,9 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentRequestDto implements StudentDto{
+public class UpdateRequestDto implements StudentDto{
     private String studentName;
     private String bloodGroup;
     private String dateOfBirth;
     private String gradePreferred;
-    private UniformRequestDto uniformMeasurement;
-    private List<SpecialClassesEnum> specialClassEnums;
 }

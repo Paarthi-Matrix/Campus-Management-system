@@ -1,5 +1,6 @@
 package com.ideas2it.cms.util;
 
+import com.ideas2it.cms.helper.SpecialClassesEnum;
 import com.ideas2it.cms.model.SpecialClass;
 
 import java.util.ArrayList;
@@ -30,17 +31,16 @@ public class ConversionUtil {
     /**
      * Converts a set of `SpecialClass` objects to a list of their integer IDs.
      *
-     * @param `specialClasses`
-     *         The set of `SpecialClass` objects to be converted.
+     * @param `specialClasses` The set of `SpecialClass` objects to be converted.
      * @return `List<Integer>`
-     *         A list of integer IDs representing the `SpecialClass` objects.
+     * A list of integer IDs representing the `SpecialClass` objects.
      */
-    public static List<Integer> convertSetToList(Set<SpecialClass> specialClasses) {
-        List<Integer> specialClassPreferenceList = new ArrayList<>();
+    public static List<SpecialClassesEnum> convertSetToList(Set<SpecialClass> specialClasses) {
+        List<SpecialClassesEnum> specialClassPreferred = new ArrayList<>();
         for (SpecialClass specialClass : specialClasses) {
-            specialClassPreferenceList.add(specialClass.getSpecialClassId());
+            specialClassPreferred.add(specialClass.getClassName());
         }
-        return specialClassPreferenceList;
+        return specialClassPreferred;
     }
 
     /**

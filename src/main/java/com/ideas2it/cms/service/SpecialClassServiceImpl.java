@@ -1,13 +1,11 @@
 package com.ideas2it.cms.service;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.ideas2it.cms.customexception.SpecialClassException;
-import com.ideas2it.cms.dao.SpecialClassDAO;
+import com.ideas2it.cms.helper.SpecialClassesEnum;
 import com.ideas2it.cms.model.SpecialClass;
 
 import com.ideas2it.cms.repository.SpecialclassRepo;
@@ -49,19 +47,20 @@ public class SpecialClassServiceImpl implements SpecialClassService{
      * @throws SpecialClassException 
      *         Arises if an error occurs while updating vacancy and number of students.
      */
-    public void UpdateVacancyOfSpecialClass(List<Integer> specialClassPreference, boolean action) {
+    public void UpdateVacancyOfSpecialClass(List<SpecialClassesEnum> specialClassPreference, boolean action) {
         Set<SpecialClass> specialClasses = new HashSet<>();
         if (specialClassPreference != null && !specialClassPreference.isEmpty()) {
-            specialClasses = new HashSet<>(specialclassRepo.findBySpecialClassId(specialClassPreference));
+            specialClasses = new HashSet<>(specialclassRepo.findByClassType(specialClassPreference));
         } else {
-            logger.warn("The specialClassPreference is empty or null " +
-                    " updating the vacancy and number of students.");
+            logger.warn("The specialClassPreference is empty or null ");
+            return;
         }
 
         int number = action ? 1 : -1;
         for (SpecialClass specialClass : specialClasses) {
             specialClass.setVacancy(specialClass.getVacancy() - number);
             specialClass.setNumberOfStudents(specialClass.getNumberOfStudents() + number);
+            specialclassRepo.save(specialClass);
         }
     }
 }

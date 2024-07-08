@@ -1,8 +1,9 @@
 package com.ideas2it.cms.controller;
 
 import java.util.List;
-import java.util.Scanner;
+import java.util.stream.Collectors;
 
+import com.ideas2it.cms.customexception.EntityNotFoundException;
 import com.ideas2it.cms.dto.*;
 import com.ideas2it.cms.helper.DateValidationResult;
 import com.ideas2it.cms.service.StudentServiceImpl;
@@ -41,14 +42,12 @@ import org.springframework.web.bind.annotation.*;
  * ResponseEntity to provide appropriate HTTP responses and status codes.
  */
 @RestController
-@RequestMapping("/cms/api/v1/students")
-public class StudentController {
+@RequestMapping("/admin")
+public class AdminController {
 
-    private static final Logger logger = LogManager.getLogger(StudentController.class);
-
+    private static final Logger logger = LogManager.getLogger(AdminController.class);
     @Autowired
     private StudentServiceImpl studentServiceImpl;
-    private static Scanner scanner = new Scanner(System.in);
 
     /**
      * <p>
@@ -77,19 +76,30 @@ public class StudentController {
      *         The headers and response code differs according the certain constraints.
      *
      */
-    @PostMapping
+    @PostMapping("/students")
     private ResponseEntity<String> addStudent(@RequestBody StudentRequestDto studentRequestDto) {
         HttpHeaders headers = new HttpHeaders();
         logger.info("The application entered the insertion phase");
-        ResponseEntity<String> responseEntity = validInputRequest(studentRequestDto);
+        ResponseEntity<String> responseEntity = insertStudentRequestValidator(studentRequestDto);
         if(null != responseEntity) {
             return responseEntity;
         }
         StudentResponceDto studentResponceDto = studentServiceImpl.addStudent(studentRequestDto);
-        if (null == studentResponceDto) {
+        if (!studentResponceDto.getIsGradeAvailable()) {
             headers.add("X-Conflict-Reason", "No vacancy in preferred grade");
-            return ResponseEntity.status(HttpStatus.CONFLICT).headers(headers).body("No vacancy is available in the preferred grade");
+            return ResponseEntity.status(HttpStatus.CONFLICT).headers(headers).body("No vacancy is available in the preferred grade " +
+                    studentRequestDto.getGradePreferred());
+        } else if (null != studentResponceDto.getSpecialClassesWithoutVacancy()
+                && !studentResponceDto.getSpecialClassesWithoutVacancy().isEmpty()) {
+            String specialClassesWithoutVacancy = studentResponceDto.getSpecialClassesWithoutVacancy()
+                    .stream()
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", "));
+            headers.add("X-Conflict-Reason", "No vacancy in preferred Special class");
+            return ResponseEntity.status(HttpStatus.CONFLICT).headers(headers).body("No vacancy is available in the preferred special class" +
+                    specialClassesWithoutVacancy);
         }
+
         headers.add("Student-Rollnumber", studentResponceDto.getRollNumber());
         return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body("Student added successfully.");
     }
@@ -109,7 +119,7 @@ public class StudentController {
      * @param rollNumber The student roll number for deleting the student.
      * @return ResponseEntity<String> The HTTP response entity containing status and headers.
      */
-    @DeleteMapping("/{rollNumber}")
+    @DeleteMapping("/students/{rollNumber}")
     public ResponseEntity<String> deleteStudent(@PathVariable String rollNumber) {
         HttpHeaders headers = new HttpHeaders();
         logger.debug("The application entered the deleting the record phase");
@@ -142,7 +152,7 @@ public class StudentController {
      * @param gradeId The ID of the grade to fetch students for.
      * @return ResponseEntity<List<FetchStudentByGradeDto>> The HTTP response entity containing the list of students and status.
      */
-    @GetMapping("/{gradeId}")
+    @GetMapping("/grades/{gradeId}")
     private ResponseEntity<List<FetchStudentByGradeDto>> getStudentByGrade(@PathVariable String gradeId) {
         logger.debug("The application entered the process of fetching of getting the grade by student.");
         List<FetchStudentByGradeDto> fetchStudentByGradeDtos = studentServiceImpl.getStudentByGrade(gradeId);
@@ -152,7 +162,8 @@ public class StudentController {
     /**
      * <p>
      * Fetches all students with pagination support.
-     *
+     * </p>
+     * <p>
      * Note:
      * <ul>
      *     <li>This method returns a paginated list of students.</li>
@@ -164,7 +175,7 @@ public class StudentController {
      * @param size The number of records per page.
      * @return ResponseEntity<Page<FetchAllStudentDto>> The HTTP response entity containing the paginated list of students and status.
      */
-    @GetMapping
+    @GetMapping("/students")
     private ResponseEntity<Page<FetchAllStudentDto>> getAllStudents(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -172,13 +183,67 @@ public class StudentController {
         return new ResponseEntity<>(fetchAllStudentDtos, HttpStatus.OK);
     }
 
-    @GetMapping
-    private ResponseEntity<Page<FetchStudentDto>> getStudentByRollNumber(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<FetchStudentDto> fetchStudentDtos = studentServiceImpl.getStudentByRollNumber(page, size);
-        return new ResponseEntity<>(fetchStudentDtos, HttpStatus.OK);
+    /**
+     * <p>
+     * Fetches a student by their roll number.
+     * </p>
+     * <p>
+     * Note:
+     * <ul>
+     *     <li>This method fetches the student associated with the given roll number.</li>
+     *     <li>Returns a 200 OK status with the student details.</li>
+     * </ul>
+     * </p>
+     * @param rollNumber
+     *        Roll number of the student to be fetched.
+     * @return ResponseEntity<FetchStudentDto>
+     *         The HTTP response entity containing the student details and status.
+     */
+    @GetMapping("/students/{rollNumber}")
+    private ResponseEntity<FetchStudentDto> getStudentByRollNumber(@PathVariable String rollNumber) {
+        FetchStudentDto fetchStudentDto = studentServiceImpl.getStudentByRollNumber(rollNumber);
+        return new ResponseEntity<>(fetchStudentDto, HttpStatus.OK);
     }
+
+
+    /**
+     * <p>
+     *     Updates the student details
+     * </p>
+     * <p>
+     * Note:
+     * <ul>
+     *   <li>This method updates the student details</li>
+     *   <li>Returns a 200 OK status with the student details.</li>
+     * </ul>
+     * </p>
+     * @param updateRequestDto
+     * @param rollNumber
+     * @return ResponseEntity<?>
+     */
+    @PutMapping("/students/{rollNumber}")
+    private ResponseEntity<?> updateStudent(@RequestBody UpdateRequestDto updateRequestDto, @PathVariable String rollNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        logger.debug("The application entered the update phase");
+
+        ResponseEntity<String> responseEntity = insertStudentRequestValidator(updateRequestDto);
+        if (null != responseEntity) {
+            return responseEntity;
+        }
+        UpdateResponceDto updateResponceDto;
+        try {
+            updateResponceDto = studentServiceImpl.updateStudent(updateRequestDto, rollNumber);
+        } catch (EntityNotFoundException e) {
+            logger.info(e.getMessage());
+            headers.add("X-Conflict-Reason", "No such entity with roll number found");
+            return ResponseEntity.status(HttpStatus.CONFLICT).headers(headers).body("No student entity with roll number " +
+                    rollNumber+ " is found in the database");
+        }
+        headers.add("Student-rollNumber", rollNumber);
+        updateResponceDto.setStatus("Student updated successfully!");
+        return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body(updateResponceDto);
+    }
+
     /**
      * <p>
      * Validates the input request for adding a student.
@@ -192,51 +257,52 @@ public class StudentController {
      *     <li>Returns appropriate ResponseEntity for invalid inputs or null if the input is valid.</li>
      * </ul>
      * </p>
-     * @param studentRequestDto The student request data transfer object containing student details.
+     * @param studentDto The student request data transfer object containing student details.
      * @return ResponseEntity<String> The HTTP response entity containing validation errors or null if valid.
      */
-    private ResponseEntity<String> validInputRequest(StudentRequestDto studentRequestDto) {
-        if (null == BloodgroupUtil.validateBloodGroup(studentRequestDto.getBloodGroup())) {
-            logger.warn("User entered invalid blood group {}", studentRequestDto.getBloodGroup()
-                    + " Must be a valid available blood group ");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body( studentRequestDto.getBloodGroup()
-                    + " is not a valid blood group");
+    private ResponseEntity<String> insertStudentRequestValidator(StudentDto studentDto) {
+        try{
+            String bloodGroup = BloodgroupUtil.validateBloodGroup(studentDto.getBloodGroup());
+            if(null == bloodGroup) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(studentDto.getBloodGroup() +
+                        " is not a valid blood group");
+            }
+        } catch(IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        DateValidationResult validationResult = DateUtil.checkValidDateAndAge(studentRequestDto.getDateOfBirth(), "dd/MM/yyyy");
+        DateValidationResult validationResult = DateUtil.checkValidDateAndAge(studentDto.getDateOfBirth(), "dd/MM/yyyy");
         switch (validationResult) {
             case VALID_DATE:
                 break;
             case INVALID_DATE:
-                logger.warn("User entered invalid date format: {}", studentRequestDto.getDateOfBirth());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentRequestDto.getDateOfBirth() +
+                logger.warn("User entered invalid date format: {}", studentDto.getDateOfBirth());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentDto.getDateOfBirth() +
                         " is not a valid date format ");
             case FUTURE_DATE:
-                logger.warn("User entered a future date: {}", studentRequestDto.getDateOfBirth());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentRequestDto.getDateOfBirth() +
+                logger.warn("User entered a future date: {}", studentDto.getDateOfBirth());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentDto.getDateOfBirth() +
                         " is a future date and not valid ");
             case OVER_18:
-                logger.warn("{} User's age is is not under constrains. Must be below 18! ", studentRequestDto.getDateOfBirth());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentRequestDto.getDateOfBirth() +
+                logger.warn("{} User's age is is not under constrains. Must be below 18! ", studentDto.getDateOfBirth());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentDto.getDateOfBirth() +
                         " User's age is is not under constrains. Must be below 18! ");
             case UNDER_3:
-                logger.warn("{} User's age is is not under constrains. Must be at least 3 years old! ", studentRequestDto.getDateOfBirth());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentRequestDto.getDateOfBirth() +
+                logger.warn("{} User's age is is not under constrains. Must be at least 3 years old! ", studentDto.getDateOfBirth());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentDto.getDateOfBirth() +
                         " User's age is is not under constrains. Must be at least 3 years old! ");
         }
 
-        if (studentRequestDto.getGradePreferred().isEmpty()) {
+        if (studentDto.getGradePreferred().isEmpty()) {
             logger.warn("The preferred grade is null ");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentRequestDto.getDateOfBirth() +
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentDto.getDateOfBirth() +
                     " The preferred grade is null ");
         }
-        if (ConversionUtil.stringToInt(studentRequestDto.getGradePreferred()) < 1
-                || ConversionUtil.stringToInt(studentRequestDto.getGradePreferred()) > 12) {
+        if (ConversionUtil.stringToInt(studentDto.getGradePreferred()) < 1
+                || ConversionUtil.stringToInt(studentDto.getGradePreferred()) > 12) {
             logger.warn("The preferred grade must be in range of 1 to 12 only ");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentRequestDto.getGradePreferred() +
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(studentDto.getGradePreferred() +
                     " The preferred grade must be in range of 1 to 12 only ");
         }
         return  null;
     }
-
-
 }

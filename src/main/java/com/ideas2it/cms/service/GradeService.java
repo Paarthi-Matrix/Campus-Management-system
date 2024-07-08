@@ -7,6 +7,4 @@ import java.util.List;
 public interface GradeService {
     int getNumberOfStudents(String gradeId);
     void updateNoOfStudentsAndVacancyAvailablity(String gradeIdAllocated, boolean action);
-
-    List<Grade> getGradeInfo(String requestedGrade);
 }

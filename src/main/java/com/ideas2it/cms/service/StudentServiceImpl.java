@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.ideas2it.cms.customexception.EntityNotFoundException;
 import com.ideas2it.cms.customexception.StudentDatabaseException;
-import com.ideas2it.cms.dao.StudentDAO;
 import com.ideas2it.cms.dto.*;
 import com.ideas2it.cms.helper.EntityDtoConverter;
+import com.ideas2it.cms.helper.SpecialClassesEnum;
 import com.ideas2it.cms.model.Grade;
 import com.ideas2it.cms.model.SpecialClass;
 import com.ideas2it.cms.model.UniformMeasurement;
@@ -16,7 +17,6 @@ import com.ideas2it.cms.model.Student;
 import com.ideas2it.cms.repository.SpecialclassRepo;
 import com.ideas2it.cms.repository.StudentRepo;
 import com.ideas2it.cms.util.ConversionUtil;
-import com.ideas2it.cms.util.DateUtil;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +42,6 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     private GradeServiceImpl gradeServiceImpl;
     @Autowired
-    private StudentDAO studentDao;
-    @Autowired
     private SpecialClassServiceImpl specialClassServiceImpl;
     @Autowired
     private StudentRepo studentRepo;
@@ -52,27 +50,24 @@ public class StudentServiceImpl implements StudentService {
 
     /**
      * <p>
-     * Adds a new student to the database with the provided details.
+     * Adds a new student to the database.
+     * </p>
+     * <p>
+     * This method handles the addition of a new student by performing the following steps:
+     * <ul>
+     *     <li>Checks for available vacancy in the preferred grade.</li>
+     *     <li>Generates a unique roll number for the student.</li>
+     *     <li>Associates the student with the preferred grade and special classes.</li>
+     *     <li>Updates the vacancy status for the grade and special classes.</li>
+     *     <li>Saves the student entity to the database.</li>
+     * </ul>
      * </p>
      *
-     * @param `studentName`
-     *        The name of the student. First name followed by Last name.
-     * @param `dateOfBirth`
-     *        The date of birth of the student. Should be in formate of (dd/MM/yyyy). 
-     * @param `bloodGroup`
-     *        The blood group of the student.
-     *        They must be a valid blood group (A+VE, A-VE, B+VE, B-VE, AB+VE, AB-VE, O+VE, O-VE).
-     *        CASE INSENSITIVE
-     * @param `gradeAllocated`
-     *        The grade allocated to the student.
-     * @param `grade`
-     *        The Grade object associated with the student.
-     * @return Student 
-     *         Returns the added student object. Returns `null` if `HibernateDbConnectionException` arises.
-     * @throws StudentDatabaseException 
-     *         Arises if an error occurs while adding the student.
+     * @param studentRequestDto
+     *        The DTO containing the student's details for the request.
+     * @return StudentResponceDto containing the details of the added student or information about any conflicts.
+     *
      */
-
     @Transactional
     public StudentResponceDto addStudent(StudentRequestDto studentRequestDto) {
         int rollNumberSuffix;
@@ -84,7 +79,9 @@ public class StudentServiceImpl implements StudentService {
             logger.info("No vacancy is available for the preferred grade {} " +
                             "Adding student {} to the database aborted",
                     studentRequestDto.getGradePreferred(), studentRequestDto.getStudentName());
-            return null;
+            StudentResponceDto studentResponceDto = new StudentResponceDto();
+            studentResponceDto.setIsGradeAvailable(false);
+            return studentResponceDto;
         }
         rollNumberSuffix = grade.getNumberOfStudents();
         rollNumber = generateRollNumber(grade.getStandard() + grade.getSection(),
@@ -94,13 +91,22 @@ public class StudentServiceImpl implements StudentService {
 
         gradeServiceImpl.updateNoOfStudentsAndVacancyAvailablity(grade.getGradeId(), true);
         logger.debug("Association of student {} to the preferred special classes", studentRequestDto.getStudentName());
-        List<Integer> specialClassPreference = studentRequestDto.getSpecialClasses();
-        List<SpecialClass> specialClasses = specialclassRepo.findBySpecialClassId(specialClassPreference);
+        List<SpecialClassesEnum> specialClassPreferences = studentRequestDto.getSpecialClassEnums();
+        System.out.println(specialClassPreferences.isEmpty());
+        List<SpecialClass> specialClasses = specialclassRepo.findByClassType(specialClassPreferences);
+        System.out.println("special classes...." + specialClasses.size());
+        List<SpecialClassesEnum> specialClassesWithoutVacancy = checkAndGetSpecialClassWithoutVacancy(specialClasses);
+        if(!specialClassesWithoutVacancy.isEmpty()) {
+            EntityDtoConverter.toStudentResponceDto(student, grade, rollNumber, specialClassesWithoutVacancy);
+            StudentResponceDto studentResponceDto = new StudentResponceDto();
+            studentResponceDto.setSpecialClassesWithoutVacancy(specialClassesWithoutVacancy);
+            return studentResponceDto;
+        }
         student.setSpecialClasses(ConversionUtil.convertArrayListToSet(specialClasses));
+        specialClassServiceImpl.UpdateVacancyOfSpecialClass(specialClassPreferences, true);
 
         logger.info("Association of student {} to the preferred special classes is successful", studentRequestDto.getStudentName());
         logger.debug("Now setting uniform measurement to the preferred special classes");
-        specialClassServiceImpl.UpdateVacancyOfSpecialClass(specialClassPreference, true);
         UniformMeasurement uniformMeasurement =EntityDtoConverter.toUniformMeasurement(studentRequestDto, rollNumber);
         student.setUniformMeasurement(uniformMeasurement);
         studentRepo.save(student);
@@ -110,18 +116,24 @@ public class StudentServiceImpl implements StudentService {
     }
 
     /**
-     *
      * <p>
-     * Retrieves and deletes a student by their roll number.
+     *   Deletes a student by roll number.
+     * </p>
+     * <p>
+     * This method performs the deletion of a student entity based on the provided roll number.
+     * It performs the following steps:
+     * <ul>
+     *     <li>Finds the student by roll number.</li>
+     *     <li>If the student exists, retrieves and converts associated special classes to a list of enums.</li>
+     *     <li>Deletes the student by roll number.</li>
+     *     <li>Updates the number of students and vacancy availability for the associated grade.</li>
+     *     <li>Updates the vacancy status for the associated special classes.</li>
+     *     <li>Returns a response DTO with the details of the deleted student.</li>
+     * </ul>
      * </p>
      *
-     * @param rollNumber 
-     *        The roll number of the student to be retrieved and deleted.
-     * @return Student 
-     *         Returns the deleted student object if found, else null.
-     * @throws StudentDatabaseException 
-     *         Arises if an error occurs while retrieving or deleting the student.
-     *
+     * @param rollNumber The roll number of the student to be deleted.
+     * @return A DeleteStudentResponceDto containing the details of the deleted student, or null if no student was found.
      */
     @Transactional
     public DeleteStudentResponceDto deleteStudentByRollNumber(String rollNumber) {
@@ -130,26 +142,30 @@ public class StudentServiceImpl implements StudentService {
             return null;
         }
         Set<SpecialClass> specialClasses = student.getSpecialClass();
-        List<Integer> associatedSpecialClasses = ConversionUtil.convertSetToList(specialClasses);
+        List<SpecialClassesEnum> associatedSpecialClassEnums = ConversionUtil.convertSetToList(specialClasses);
         studentRepo.deleteByRollNumber(rollNumber);
         gradeServiceImpl.updateNoOfStudentsAndVacancyAvailablity(student.getGrade().getGradeId(), false);
-        specialClassServiceImpl.UpdateVacancyOfSpecialClass(associatedSpecialClasses, false);
+        specialClassServiceImpl.UpdateVacancyOfSpecialClass(associatedSpecialClassEnums, false);
         return EntityDtoConverter.toDeleteStudentResponceDto(student);
     }
 
     /**
-     *
      * <p>
-     * Retrieves a list of students by their grade.
+     *    Retrieves a list of students by the specified grade.
+     * </p>
+     * <p>
+     * This method performs the following steps:
+     * <ul>
+     *     <li>Finds students associated with the given grade ID.</li>
+     *     <li>Converts each student entity to a FetchStudentByGradeDto object.</li>
+     *     <li>Returns a list of FetchStudentByGradeDto objects representing the students in the specified grade.</li>
+     * </ul>
      * </p>
      *
-     * @param requestedGrade 
-     *        The grade to filter by students.
-     * @return List<Student> 
-     *         The list of students in the specified grade. If there are no students, returns null.
-     * @throws StudentDatabaseException 
-     *         Arises if an error occurs while retrieving the students.
-     *
+     * @param requestedGrade
+     *         The ID of the grade for which to retrieve students.
+     * @return List<FetchStudentByGradeDto>
+     *         A list of FetchStudentByGradeDto objects representing students in the specified grade.
      */
     public List<FetchStudentByGradeDto> getStudentByGrade(String requestedGrade) {
         List<Student> students= studentRepo.findByGradeId(requestedGrade);
@@ -161,40 +177,6 @@ public class StudentServiceImpl implements StudentService {
         return fetchStudentByGradeDtos;
     }
 
-    /**
-     * <p>
-     * Adds uniform measurements to a student.
-     * </p>
-     * @param `student`
-     *        The student object to be updated with uniform measurements.
-     * @param `shirtSize`
-     *        The shirt size for the uniform. The shirt size varies from (XM, S, M, L, XL, XXL).
-     * @param `pantSize`
-     *        The pant size for the uniform. Size must be in centi meters as number.
-     * @param `shoeSize`
-     *        The shoe size for the uniform. Shoe size varies from 7 to 10.
-     * @throws `StudentDatabaseException`
-     *         Arises if an error occurs while adding the uniform measurements.
-     *
-     */
-    @Transactional
-    public void addUniformMeasurementToStudent(StudentRequestDto studentRequestDto, StudentResponceDto studentResponceDto) {
-        Student existingStudent = studentRepo.findByRollNumber(studentResponceDto.getRollNumber());
-
-        if (existingStudent == null) {
-            throw new IllegalArgumentException("Student with roll number " +
-                    studentResponceDto.getRollNumber() + " not found.");
-        }
-        UniformMeasurement uniformMeasurement = new UniformMeasurement(
-                studentResponceDto.getRollNumber(),
-                studentRequestDto.getUniformRequestDto().getShirtSize(),
-                studentRequestDto.getUniformRequestDto().getPantSize(),
-                studentRequestDto.getUniformRequestDto().getShoeSize()
-        );
-        existingStudent.setUniformMeasurement(uniformMeasurement);
-        studentRepo.save(existingStudent);
-    }
-
     @Transactional(readOnly = true)
     public Page<FetchAllStudentDto> getAllStudents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -203,6 +185,28 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Transactional(readOnly = true)
+    public FetchStudentDto getStudentByRollNumber(String rollNumber) {
+        Student student = studentRepo.findByRollNumber(rollNumber);
+        return  EntityDtoConverter.toFetchStudentDto(student);
+    }
+
+    @Transactional
+    public UpdateResponceDto updateStudent(UpdateRequestDto updateRequestDto, String rollNumber) {
+        Student student = studentRepo.findByRollNumber(rollNumber);
+        if(null == student) {
+           String errorMessage = "Conflict in the data while updating." +
+                   " No Student with roll number" + rollNumber +
+                   "is found in the database." +
+                   " Check the roll number of the student!";
+           throw new EntityNotFoundException(errorMessage);
+        }
+        student.setStudentName(updateRequestDto.getStudentName());
+        student.setDateOfBirth(updateRequestDto.getDateOfBirth());
+        student.setBloodGroup(updateRequestDto.getBloodGroup());
+
+        studentRepo.save(student);
+        return EntityDtoConverter.toUpdateResponceDto(student);
+    }
     /**
      * <p>
      * Generates a roll number for the student based on the grade ID and roll number suffix.
@@ -221,7 +225,7 @@ public class StudentServiceImpl implements StudentService {
      *         The generated roll number.
      *
      */
-    private String generateRollNumber(String gradeIDAllocated, int rollNumberSuffix) {
+    private synchronized String generateRollNumber(String gradeIDAllocated, int rollNumberSuffix) {
         logger.debug("Generating the roll number for grade {}", gradeIDAllocated);
         if (rollNumberSuffix + 1 >= 100) {
             logger.info("Roll number generated successfully");
@@ -233,5 +237,18 @@ public class StudentServiceImpl implements StudentService {
             logger.info("Roll number generated successfully");
             return gradeIDAllocated + String.format("%03d", ++rollNumberSuffix);
         }
+    }
+
+    private List<SpecialClassesEnum> checkAndGetSpecialClassWithoutVacancy(List<SpecialClass> specialClasses) {
+        List<SpecialClassesEnum> specialClassWithoutVacancy = new ArrayList<>();
+        for (SpecialClass specialClass : specialClasses) {
+            if(specialClass.getVacancy() == 0) {
+                logger.info("No vacancy is available for the preferred special class {} " +
+                                "Adding student to the database aborted",
+                        specialClass.getClassName());
+                specialClassWithoutVacancy.add(specialClass.getClassName());
+            }
+        }
+        return specialClassWithoutVacancy;
     }
 }

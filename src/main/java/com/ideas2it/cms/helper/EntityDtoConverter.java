@@ -6,14 +6,16 @@ import com.ideas2it.cms.model.Student;
 import com.ideas2it.cms.model.UniformMeasurement;
 import com.ideas2it.cms.util.DateUtil;
 
+import java.util.List;
+
 public class EntityDtoConverter {
 
     public static UniformMeasurement toUniformMeasurement(StudentRequestDto studentRequestDto, String rollNumber) {
         UniformMeasurement uniformMeasurement = new UniformMeasurement();
         uniformMeasurement.setRollNumber(rollNumber);
-        uniformMeasurement.setPantSize(studentRequestDto.getUniformRequestDto().getPantSize());
-        uniformMeasurement.setShirtSize(studentRequestDto.getUniformRequestDto().getShirtSize());
-        uniformMeasurement.setShoeSize(studentRequestDto.getUniformRequestDto().getShoeSize());
+        uniformMeasurement.setPantSize(studentRequestDto.getUniformMeasurement().getPantSize());
+        uniformMeasurement.setShirtSize(studentRequestDto.getUniformMeasurement().getShirtSize());
+        uniformMeasurement.setShoeSize(studentRequestDto.getUniformMeasurement().getShoeSize());
         return uniformMeasurement;
     }
 
@@ -54,5 +56,39 @@ public class EntityDtoConverter {
         fetchAllStudentDto.setDateOfBirth(student.getDateOfBirth());
         fetchAllStudentDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "years"));
         return fetchAllStudentDto;
+    }
+
+    public static FetchStudentDto toFetchStudentDto(Student student) {
+        FetchStudentDto fetchStudentDto = new FetchStudentDto();
+        fetchStudentDto.setStudentName(student.getStudentName());
+        fetchStudentDto.setRollNumber(student.getRollNumber());
+        fetchStudentDto.setDateOfBirth(student.getDateOfBirth());
+        fetchStudentDto.setBloodGroup(student.getBloodGroup());
+        fetchStudentDto.setStandard(student.getGrade().getStandard());
+        fetchStudentDto.setSection(student.getGrade().getSection());
+        fetchStudentDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Years"));
+        return fetchStudentDto;
+    }
+
+    public static UpdateResponceDto toUpdateResponceDto(Student student) {
+        UpdateResponceDto updateResponceDto = new UpdateResponceDto();
+        updateResponceDto.setStudentName(student.getStudentName());
+        updateResponceDto.setBloodGroup(student.getBloodGroup());
+        updateResponceDto.setDateOfBirth(student.getDateOfBirth());
+        updateResponceDto.setRollNumber(student.getRollNumber());
+        return updateResponceDto;
+    }
+    public static StudentResponceDto toStudentResponceDto(Student student, Grade grade, String rollNumber, List<SpecialClassesEnum> specialClassesWithoutVacancy) {
+        StudentResponceDto studentResponceDto = new StudentResponceDto();
+        studentResponceDto.setStudentName(student.getStudentName());
+        studentResponceDto.setStandard(student.getGrade().getStandard());
+        studentResponceDto.setSection(student.getGrade().getSection());
+        studentResponceDto.setBloodGroup(student.getBloodGroup());
+        studentResponceDto.setDateOfBirth(student.getDateOfBirth());
+        studentResponceDto.setRollNumber(rollNumber);
+        studentResponceDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Year"));
+        studentResponceDto.setGrade(grade);
+        studentResponceDto.setSpecialClassesWithoutVacancy(specialClassesWithoutVacancy);
+        return studentResponceDto;
     }
 }

@@ -79,8 +79,6 @@ public class DateUtil {
 	    }
      }
 
-
-   
      /**
      * <p>
      *
@@ -124,8 +122,7 @@ public class DateUtil {
           } else {
               currentDate = LocalDate.parse(endDateExclusive, formatter);;
           }
-          LocalDate userGivenDate = LocalDate.parse(startDateInclusive, formatter);    
-          // Calculate age using java.time.Period
+          LocalDate userGivenDate = LocalDate.parse(startDateInclusive, formatter);
           Period period = Period.between(userGivenDate, currentDate);
           if(preiodPreference.equals("Months") || preiodPreference.equals("months")) {
               return period.getMonths();

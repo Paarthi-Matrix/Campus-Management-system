@@ -3,7 +3,6 @@ package com.ideas2it.cms.service;
 import java.util.List;
 
 import com.ideas2it.cms.customexception.GradeDatabaseException;
-import com.ideas2it.cms.dao.GradeDAO;
 import com.ideas2it.cms.model.Grade;
 
 import com.ideas2it.cms.repository.GradeRepo;
@@ -30,11 +29,7 @@ public class GradeServiceImpl implements GradeService {
     private static final Logger logger = LogManager.getLogger(GradeServiceImpl.class);
 
     @Autowired
-    private GradeDAO gradeDao;
-
-    @Autowired
     private GradeRepo gradeRepo;
-
 
     /**
      * <p>
@@ -51,18 +46,13 @@ public class GradeServiceImpl implements GradeService {
      */
     public Grade getPreferedGrade(String standard) {
         System.out.println("Grade Preference: " + standard);
-
         List<Grade> grades = gradeRepo.findByStandard(standard);
-        System.out.println("Grades Found: " + (grades == null ? "null" : grades.size()));
-
         if (grades == null || grades.isEmpty()) {
-            System.out.println("No grades found with the given preference.");
             return null;
         }
 
         Grade grade = null;
         for (Grade gradeObj : grades) {
-            System.out.println("Checking grade: " + gradeObj.getGradeId() + " with vacancy: " + gradeObj.getVacancy());
             if (gradeObj.getVacancy() > 0) {
                 grade = gradeObj;
                 break;
@@ -73,7 +63,6 @@ public class GradeServiceImpl implements GradeService {
     }
 
     /**
-     *
      * <p>
      * This method updates the number of students and vacancy availability for a given grade.
      * </p>
@@ -102,7 +91,6 @@ public class GradeServiceImpl implements GradeService {
         logger.info("Successfully updated the number of students and vacancy");
     }
 
-
     /**
      * <p>
      * This method retrieves the number of students in a specified grade.
@@ -120,21 +108,5 @@ public class GradeServiceImpl implements GradeService {
         return gradeRepo.findNumberOfStudentsByGradeId(gradeAllocated);
     }
 
-    /**
-     * <p>
-     * This method fetches the preferred grade based on the user's input.
-     * </p>
-     *
-     * @param `gradePreference`
-     *        The preferred grade specified by the user.
-     * @return Grade
-     *         Returns the grade with available vacancies that matches the preference.
-     *         If no such grade is found, returns `null`. Also returns `null` if `HibernateDbConnectionException` arises.
-     * @throws GradeDatabaseException
-     *         Arises while geting the entire grade detalis.
-     */
-    public List<Grade> getGradeInfo(String requestedGrade) {
-        logger.debug("Fetching grade info for {}", requestedGrade);
-        return gradeDao.getGradeInfo(requestedGrade);
-    }
+
 }
