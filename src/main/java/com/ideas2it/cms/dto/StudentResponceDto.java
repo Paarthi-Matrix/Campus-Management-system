@@ -17,14 +17,10 @@ import java.util.Set;
 @AllArgsConstructor
 public class StudentResponceDto {
     private String studentName;
-    private String dateOfBirth;
-    private String bloodGroup;
     private String standard;
     private String section;
     private String rollNumber;
-    private Grade grade;
     private int age;
-    private Set<SpecialClass> specialClasses;
     private boolean isGradeAvailable = true;
     private List<SpecialClassesEnum> specialClassesWithoutVacancy = null;
     public boolean getIsGradeAvailable() {

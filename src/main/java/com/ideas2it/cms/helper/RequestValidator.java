@@ -1,0 +1,77 @@
+package com.ideas2it.cms.helper;
+
+import com.ideas2it.cms.controller.AdminController;
+import com.ideas2it.cms.dto.StudentDto;
+import com.ideas2it.cms.util.BloodgroupUtil;
+import com.ideas2it.cms.util.ConversionUtil;
+import com.ideas2it.cms.util.DateUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
+
+public class RequestValidator {
+    private static final Logger logger = LogManager.getLogger(AdminController.class);
+
+    /**
+     * <p>
+     * Validates the input request for adding a student.
+     * </p>
+     * <p>
+     * Note:
+     * <ul>
+     *     <li>Checks for valid blood group using BloodgroupUtil.</li>
+     *     <li>Validates date of birth using DateUtil.</li>
+     *     <li>Ensures the preferred grade is within the valid range.</li>
+     *     <li>Returns appropriate ResponseEntity for invalid inputs or null if the input is valid.</li>
+     * </ul>
+     * </p>
+     * @param studentDto The student request data transfer object containing student details.
+     * @return ResponseEntity<String> The HTTP response entity containing validation errors or null if valid.
+     */
+    public static synchronized String insertStudentRequestValidator(StudentDto studentDto) {
+        try{
+            String bloodGroup = BloodgroupUtil.validateBloodGroup(studentDto.getBloodGroup());
+            if(ObjectUtils.isEmpty(bloodGroup)) {
+                return studentDto.getBloodGroup() +
+                        " is not a valid blood group";
+            }
+        } catch(IllegalArgumentException e) {
+            return e.getMessage();
+        }
+        DateValidationResult validationResult = DateUtil.checkValidDateAndAge(studentDto.getDateOfBirth(), "dd/MM/yyyy");
+        switch (validationResult) {
+            case VALID_DATE:
+                 break;
+            case INVALID_DATE:
+                logger.warn("User entered invalid date format: {}", studentDto.getDateOfBirth());
+                return studentDto.getDateOfBirth() +
+                        " is not a valid date format ";
+            case FUTURE_DATE:
+                logger.warn("User entered a future date: {}", studentDto.getDateOfBirth());
+                return studentDto.getDateOfBirth() +
+                        " is a future date and not valid ";
+            case OVER_18:
+                logger.warn("{} User's age is is not under constrains. Must be below 18! ", studentDto.getDateOfBirth());
+                return (studentDto.getDateOfBirth() + " User's age is is not under constrains. Must be below 18!" );
+            case UNDER_3:
+                logger.warn("{} User's age is is not under constrains. Must be at least 3 years old! ", studentDto.getDateOfBirth());
+                return studentDto.getDateOfBirth() +
+                        " User's age is is not under constrains. Must be at least 3 years old! ";
+        }
+
+        if (ObjectUtils.isEmpty(studentDto.getGradePreferred())) {
+            logger.warn("The preferred grade is null ");
+            return studentDto.getDateOfBirth() +
+                    " The preferred grade is null ";
+        }
+        if (ConversionUtil.stringToInt(studentDto.getGradePreferred()) < 1
+                || ConversionUtil.stringToInt(studentDto.getGradePreferred()) > 12) {
+            logger.warn("The preferred grade must be in range of 1 to 12 only ");
+            return studentDto.getGradePreferred() +
+                    " The preferred grade must be in range of 1 to 12 only ";
+        }
+        return "Valid";
+    }
+}

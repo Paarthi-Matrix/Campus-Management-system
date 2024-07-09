@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 /**
  *
@@ -169,7 +170,9 @@ public class StudentServiceImpl implements StudentService {
      */
     public List<FetchStudentByGradeDto> getStudentByGrade(String requestedGrade) {
         List<Student> students= studentRepo.findByGradeId(requestedGrade);
-
+        if(ObjectUtils.isEmpty(students)) {
+            return null;
+        }
         List<FetchStudentByGradeDto> fetchStudentByGradeDtos = new ArrayList<>();
         for (Student student : students) {
             fetchStudentByGradeDtos.add(EntityDtoConverter.toFetchStudentByGradeDto(student));
@@ -177,6 +180,22 @@ public class StudentServiceImpl implements StudentService {
         return fetchStudentByGradeDtos;
     }
 
+    /**
+     * <p>
+     * Retrieves a paginated list of all students.
+     *</p>
+     * <p>
+     * This method retrieves a list of all students from the database, with pagination support.
+     * It uses the given page number and size to create a Pageable object, fetches the students,
+     * and maps the student entities to FetchAllStudentDto objects.
+     * </p>
+     *
+     * @param page
+     *        The page number to fetch.
+     * @param size
+     *        The number of records per page.
+     * @return A Page of FetchAllStudentDto objects representing the paginated list of students.
+     */
     @Transactional(readOnly = true)
     public Page<FetchAllStudentDto> getAllStudents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -184,12 +203,48 @@ public class StudentServiceImpl implements StudentService {
         return students.map(EntityDtoConverter::toFetchAllStudentDto);
     }
 
+    /**
+     * <p>
+     * Retrieves a student by their roll number.
+     *</p>
+     * <p>
+     * This method fetches a student from the database using the given roll number,
+     * and converts the student entity to a FetchStudentDto object.
+     * </p>
+     *
+     * @param rollNumber
+     *        The roll number of the student to fetch.
+     * @return A FetchStudentDto object representing the fetched student.
+     */
     @Transactional(readOnly = true)
     public FetchStudentDto getStudentByRollNumber(String rollNumber) {
         Student student = studentRepo.findByRollNumber(rollNumber);
+        if(ObjectUtils.isEmpty(student)) {
+            FetchStudentDto fetchStudentDto = new FetchStudentDto();
+            fetchStudentDto.setIsStudentAvailable(false);
+            return fetchStudentDto;
+        }
         return  EntityDtoConverter.toFetchStudentDto(student);
     }
 
+    /**
+     * <p>
+     * Updates a student's details using the provided UpdateRequestDto and roll number.
+     * </p>
+     * <p>
+     * This method fetches the student from the database using the given roll number,
+     * updates the student's details with the information provided in the UpdateRequestDto,
+     * saves the updated student entity, and converts the updated entity to an UpdateResponceDto object.
+     * If the student with given roll number is not found, an EntityNotFoundException is thrown.
+     * </p>
+     *
+     * @param updateRequestDto
+     *        The DTO containing the updated student details.
+     * @param rollNumber
+     *        The roll number of the student to update.
+     * @return An UpdateResponceDto object representing the updated student.
+     * @throws EntityNotFoundException if the student with the given roll number is not found.
+     */
     @Transactional
     public UpdateResponceDto updateStudent(UpdateRequestDto updateRequestDto, String rollNumber) {
         Student student = studentRepo.findByRollNumber(rollNumber);
@@ -239,6 +294,12 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+    /**
+     * Checks the given list of special classes and returns a list of special classes that have no vacancy.
+     *
+     * @param specialClasses the list of special classes to check for vacancy
+     * @return a list of SpecialClassesEnum indicating which special classes have no vacancy
+     */
     private List<SpecialClassesEnum> checkAndGetSpecialClassWithoutVacancy(List<SpecialClass> specialClasses) {
         List<SpecialClassesEnum> specialClassWithoutVacancy = new ArrayList<>();
         for (SpecialClass specialClass : specialClasses) {

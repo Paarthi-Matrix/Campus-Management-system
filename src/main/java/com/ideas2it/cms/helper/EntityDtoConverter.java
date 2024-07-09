@@ -24,11 +24,8 @@ public class EntityDtoConverter {
         studentResponceDto.setStudentName(student.getStudentName());
         studentResponceDto.setStandard(student.getGrade().getStandard());
         studentResponceDto.setSection(student.getGrade().getSection());
-        studentResponceDto.setBloodGroup(student.getBloodGroup());
-        studentResponceDto.setDateOfBirth(student.getDateOfBirth());
         studentResponceDto.setRollNumber(rollNumber);
-        studentResponceDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Year"));
-        studentResponceDto.setGrade(grade);
+        studentResponceDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Years"));
         return studentResponceDto;
     }
 
@@ -83,11 +80,8 @@ public class EntityDtoConverter {
         studentResponceDto.setStudentName(student.getStudentName());
         studentResponceDto.setStandard(student.getGrade().getStandard());
         studentResponceDto.setSection(student.getGrade().getSection());
-        studentResponceDto.setBloodGroup(student.getBloodGroup());
-        studentResponceDto.setDateOfBirth(student.getDateOfBirth());
         studentResponceDto.setRollNumber(rollNumber);
         studentResponceDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Year"));
-        studentResponceDto.setGrade(grade);
         studentResponceDto.setSpecialClassesWithoutVacancy(specialClassesWithoutVacancy);
         return studentResponceDto;
     }

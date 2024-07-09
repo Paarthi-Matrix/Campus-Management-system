@@ -6,6 +6,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class for blood group validation.
+ * <p>
+ * This class contains methods and constants used to validate blood group inputs
+ * against a predefined set of valid blood groups.
+ * </p>
+ */
 public class BloodgroupUtil {
     private static final Logger logger = LoggerFactory.getLogger(BloodgroupUtil.class);
     private static final Set<String> VALID_BLOOD_GROUPS = new HashSet<>();
@@ -21,6 +28,21 @@ public class BloodgroupUtil {
         VALID_BLOOD_GROUPS.add("O-VE");
     }
 
+    /**
+     * <p>
+     * Validates the given blood group.
+     * </p>
+     * <p>
+     * This method checks if the provided blood group is valid by comparing it
+     * against a predefined set of valid blood groups. The blood group is converted
+     * to uppercase and trimmed before validation.
+     * </p>
+     *
+     * @param bloodGroup
+     *        The blood group to validate.
+     * @return The validated blood group in uppercase if valid, or null if invalid.
+     * @throws IllegalArgumentException if the blood group is null or empty.
+     */
     public static String validateBloodGroup(String bloodGroup) {
         logger.info("Validating blood group!");
         if (bloodGroup == null || bloodGroup.isEmpty()) {

@@ -18,4 +18,13 @@ public class FetchStudentDto {
     private int age;
     private String standard;
     private String section;
+    private boolean isStudentAvailable = true;
+
+    public void setIsStudentAvailable(boolean value) {
+        this.isStudentAvailable = value;
+    }
+
+    public boolean getIsStudentAvailable() {
+        return  isStudentAvailable;
+    }
 }
