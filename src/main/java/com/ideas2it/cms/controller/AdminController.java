@@ -1,10 +1,10 @@
 package com.ideas2it.cms.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.ideas2it.cms.customexception.EntityNotFoundException;
+import com.ideas2it.cms.customexception.*;
 import com.ideas2it.cms.dto.*;
+import com.ideas2it.cms.helper.EntityDtoConverter;
 import com.ideas2it.cms.service.StudentServiceImpl;
 import com.ideas2it.cms.util.BloodgroupUtil;
 import com.ideas2it.cms.util.DateUtil;
@@ -15,15 +15,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
-
-
 
 /**
  * <p>
- * StudentController handles the CRUD operations for the Student entity.
+ * AdminController handles the CRUD operations for the Student entity.
  * It manages the endpoints to add, delete, and fetch student details.
  * The controller ensures data validation for student details such as
  * date of birth and blood group before processing the requests.
@@ -46,7 +42,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/admin")
 public class AdminController {
 
-    private static final Logger logger = LogManager.getLogger(AdminController.class);
+    private static Logger logger = LogManager.getLogger(AdminController.class);
     @Autowired
     private StudentServiceImpl studentServiceImpl;
 
@@ -80,26 +76,24 @@ public class AdminController {
     @PostMapping("/students")
     private ApiResponseDto<StudentResponceDto> addStudent(@RequestBody StudentRequestDto studentRequestDto) {
         HttpHeaders headers = new HttpHeaders();
+        StudentResponceDto studentResponceDto;
         logger.debug("The application entered the insertion phase");
-        String responseMessage = RequestValidator.insertStudentRequestValidator(studentRequestDto);
-        if (responseMessage != null && !responseMessage.equals("Valid")) {
-            return ApiResponseDto.statusBadRequest(responseMessage);
-        }
-        StudentResponceDto studentResponceDto = studentServiceImpl.addStudent(studentRequestDto);
-        if (!studentResponceDto.getIsGradeAvailable()) {
-            //headers.add("X-Conflict-Reason", "No vacancy in preferred grade");
-            return ApiResponseDto.statusNoContent("No vacancy in preferred grade");
-        } else if (null != studentResponceDto.getSpecialClassesWithoutVacancy()
-                && !studentResponceDto.getSpecialClassesWithoutVacancy().isEmpty()) {
-            String specialClassesWithoutVacancy = studentResponceDto.getSpecialClassesWithoutVacancy()
-                    .stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(", "));
-            headers.add("X-Conflict-Reason", "No vacancy in preferred Special class");
-            return ApiResponseDto.statusNoContent("No vacancy in preferred Special class");
+
+        try{
+            RequestValidator.insertStudentRequestValidator(studentRequestDto);
+            studentResponceDto = studentServiceImpl.addStudent(studentRequestDto);
+        } catch (PreCondtionValidationException e) {
+            studentResponceDto = EntityDtoConverter.toStudentResponceDto(studentRequestDto);
+            return ApiResponseDto.statusBadRequest(studentResponceDto, e);
+        } catch (GradeNotFoundException e) {
+            studentResponceDto = EntityDtoConverter.toStudentResponceDto(studentRequestDto);
+            return ApiResponseDto.statusNoContent(studentResponceDto, e);
+        } catch (SpecialClassNotfoundException e) {
+            StudentResponceDto studentResponseDtoAsParam = e.getStudentResponceDto();
+            return ApiResponseDto.statusNoContent(studentResponseDtoAsParam, e);
         }
 
-        headers.add("Student-Rollnumber", studentResponceDto.getRollNumber());
+       // headers.add("Student-Rollnumber", studentResponceDto.getRollNumber());
         return ApiResponseDto.statusCreated(studentResponceDto);
     }
 
@@ -119,25 +113,22 @@ public class AdminController {
      * @return ResponseEntity<String> The HTTP response entity containing status and headers.
      */
     @DeleteMapping("/students/{rollNumber}")
-    public ResponseEntity<?> deleteStudent(@PathVariable String rollNumber) {
+    public ApiResponseDto<DeleteStudentResponceDto> deleteStudent(@PathVariable String rollNumber) {
         HttpHeaders headers = new HttpHeaders();
         logger.debug("The application entered the deleting the record phase");
-        DeleteStudentResponceDto deleteStudentResponceDto  = studentServiceImpl.deleteStudentByRollNumber(rollNumber);
-
-        if (null == deleteStudentResponceDto) {
-            logger.warn("No such student with roll number {} is found in the database!", rollNumber);
-            return ApiResponseDto.statusNoContent("No such student with roll number " + rollNumber +
-                    " is found in the database!");
-        } else {
-            logger.info("Student " + deleteStudentResponceDto.getStudentName() +
-                    " with roll number " + rollNumber +
-                    " is deleted successfully!");
-            headers.add("Deleted student name", deleteStudentResponceDto.getStudentName());
-            return ApiResponseDto.statusOk("Student " + deleteStudentResponceDto.getStudentName() +
-                    " with roll number " + rollNumber +
-                            " is deleted successfully!");
+        DeleteStudentResponceDto deleteStudentResponceDto;
+        try {
+            deleteStudentResponceDto = studentServiceImpl.deleteStudentByRollNumber(rollNumber);
+        } catch (StudentNotFoundException e) {
+            deleteStudentResponceDto = EntityDtoConverter.toDeleteStudentResponceDto(rollNumber);
+            return ApiResponseDto.statusNoContent(deleteStudentResponceDto, e);
         }
 
+        logger.info("Student " + deleteStudentResponceDto.getStudentName() +
+                    " with roll number " + rollNumber +
+                    " is deleted successfully!");
+        //headers.add("Deleted student name", deleteStudentResponceDto.getStudentName());
+        return ApiResponseDto.statusOk(deleteStudentResponceDto);
     }
 
     /**
@@ -153,13 +144,14 @@ public class AdminController {
      * @param gradeId The ID of the grade to fetch students for.
      * @return ResponseEntity<List<FetchStudentByGradeDto>> The HTTP response entity containing the list of students and status.
      */
-    @GetMapping("/grades/{gradeId}")
-    private ResponseEntity<?> getStudentByGrade(@PathVariable String gradeId) {
+    @GetMapping("/students/{gradeId}/grades")
+    private ApiResponseDto<List<FetchStudentByGradeDto>> getStudentByGrade(@PathVariable String gradeId) {
         logger.debug("The application entered the process of fetching of getting the grade by student.");
-        List<FetchStudentByGradeDto> fetchStudentByGradeDtos = studentServiceImpl.getStudentByGrade(gradeId);
-        if (ObjectUtils.isEmpty(fetchStudentByGradeDtos)) {
-            return  ApiResponseDto.statusNoContent("No such grade Id " + gradeId +
-                    " is found in the database!");
+        List<FetchStudentByGradeDto> fetchStudentByGradeDtos = null;
+        try {
+            fetchStudentByGradeDtos = studentServiceImpl.getStudentByGrade(gradeId);
+        } catch (GradeNotFoundException e) {
+            return  ApiResponseDto.statusNoContent(fetchStudentByGradeDtos, e);
         }
         return ApiResponseDto.statusOk(fetchStudentByGradeDtos);
     }
@@ -181,7 +173,7 @@ public class AdminController {
      * @return ResponseEntity<Page<FetchAllStudentDto>> The HTTP response entity containing the paginated list of students and status.
      */
     @GetMapping("/students")
-    private ResponseEntity<?> getAllStudents(
+    private ApiResponseDto<Page<FetchAllStudentDto>> getAllStudents(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Page<FetchAllStudentDto> fetchAllStudentDtos = studentServiceImpl.getAllStudents(page, size);
@@ -205,11 +197,12 @@ public class AdminController {
      *         The HTTP response entity containing the student details and status.
      */
     @GetMapping("/students/{rollNumber}")
-    private ResponseEntity<?> getStudentByRollNumber(@PathVariable String rollNumber) {
-        FetchStudentDto fetchStudentDto = studentServiceImpl.getStudentByRollNumber(rollNumber);
-        if(!fetchStudentDto.getIsStudentAvailable()){
-            return ApiResponseDto.statusNoContent("No such student with roll number " + rollNumber +
-                    " is found in the database!");
+    private ApiResponseDto<FetchStudentDto> getStudentByRollNumber(@PathVariable String rollNumber) {
+        FetchStudentDto fetchStudentDto = null;
+        try{
+            fetchStudentDto = studentServiceImpl.getStudentByRollNumber(rollNumber);
+        } catch (StudentNotFoundException e) {
+            return ApiResponseDto.statusNoContent(fetchStudentDto, e);
         }
         return ApiResponseDto.statusOk(fetchStudentDto);
     }
@@ -232,21 +225,18 @@ public class AdminController {
      * @return ResponseEntity<?>
      */
     @PutMapping("/students/{rollNumber}")
-    private ResponseEntity<?> updateStudent(@RequestBody UpdateRequestDto updateRequestDto, @PathVariable String rollNumber) {
+    private ApiResponseDto<UpdateResponceDto> updateStudent(@RequestBody UpdateRequestDto updateRequestDto, @PathVariable String rollNumber) {
         HttpHeaders headers = new HttpHeaders();
         logger.debug("The application entered the update phase");
-
-        String responseMessage = RequestValidator.insertStudentRequestValidator(updateRequestDto);
-        if (null != responseMessage && responseMessage.equals("Valid")) {
-            return ApiResponseDto.statusBadRequest(responseMessage);
-        }
-        UpdateResponceDto updateResponceDto;
+        UpdateResponceDto updateResponceDto = null;
         try {
+            RequestValidator.insertStudentRequestValidator(updateRequestDto);
             updateResponceDto = studentServiceImpl.updateStudent(updateRequestDto, rollNumber);
+        }  catch (PreCondtionValidationException e) {
+            return ApiResponseDto.statusBadRequest(updateResponceDto , e);
         } catch (EntityNotFoundException e) {
             logger.info(e.getMessage());
-            return ApiResponseDto.statusNoContent("No student entity with roll number " +
-                    rollNumber+ " is found in the database");
+            return ApiResponseDto.statusNoContent(updateResponceDto, e);
         }
         headers.add("Student-rollNumber", rollNumber);
         updateResponceDto.setStatus("Student updated successfully!");

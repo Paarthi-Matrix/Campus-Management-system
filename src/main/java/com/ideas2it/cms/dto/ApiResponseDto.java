@@ -2,6 +2,7 @@ package com.ideas2it.cms.dto;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDateTime;
 
@@ -9,11 +10,20 @@ public class ApiResponseDto<T> extends ResponseEntity<SuccessMessage<T>> {
     private LocalDateTime timestamp;
     private String message;
     private T data;
+    private Exception exception;
 
     private ApiResponseDto(String message, T data, HttpStatus httpStatus) {
         super(new SuccessMessage<>(message, data, httpStatus.value()), httpStatus);
         this.timestamp = LocalDateTime.now();
         this.message = message;
+        this.data = data;
+    }
+
+    private ApiResponseDto(String message, T data, Exception e, HttpStatus httpStatus) {
+        super((MultiValueMap<String, String>) new ErrorMessage<>(message, data, httpStatus.value(), e), httpStatus);
+        this.timestamp = LocalDateTime.now();
+        this.message = message;
+        this.exception = e;
         this.data = data;
     }
     public static <T> ApiResponseDto<T> statusOk(T data) {
@@ -24,16 +34,16 @@ public class ApiResponseDto<T> extends ResponseEntity<SuccessMessage<T>> {
         return new ApiResponseDto<>("Resource created successfully", data, HttpStatus.CREATED);
     }
 
-    public static <T> ApiResponseDto<T> statusNoContent(T data) {
-        return new ApiResponseDto<>("No content available", data, HttpStatus.NO_CONTENT);
+    public static <T> ApiResponseDto<T> statusNoContent(T data, Exception e) {
+        return new ApiResponseDto<>("No content available", data,e, HttpStatus.NO_CONTENT);
     }
 
     public static <T> ApiResponseDto<T> statusAccepted(T data) {
         return new ApiResponseDto<>("Request accepted", data, HttpStatus.ACCEPTED);
     }
 
-    public static <T> ApiResponseDto<T> statusBadRequest(T data) {
-        return new ApiResponseDto<>("Invalid request", data, HttpStatus.BAD_REQUEST);
+    public static <T> ApiResponseDto<T> statusBadRequest(T data, Exception e) {
+        return new ApiResponseDto<>("Invalid request", data, e,HttpStatus.BAD_REQUEST);
     }
 
     public static <T> ApiResponseDto<T> of(String message, T data, HttpStatus httpStatus) {
@@ -54,27 +64,4 @@ public class ApiResponseDto<T> extends ResponseEntity<SuccessMessage<T>> {
     }
 }
 
-class SuccessMessage<T> {
-    private String message;
-    private T data;
-    private int status;
 
-    public SuccessMessage(String message, T data, int status) {
-        this.message = message;
-        this.data = data;
-        this.status = status;
-    }
-
-    // Getters
-    public String getMessage() {
-        return message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-}

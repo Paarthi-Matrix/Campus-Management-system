@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.ideas2it.cms.customexception.EntityNotFoundException;
-import com.ideas2it.cms.customexception.StudentDatabaseException;
+import com.ideas2it.cms.customexception.*;
 import com.ideas2it.cms.dto.*;
 import com.ideas2it.cms.helper.EntityDtoConverter;
 import com.ideas2it.cms.helper.SpecialClassesEnum;
@@ -80,9 +79,8 @@ public class StudentServiceImpl implements StudentService {
             logger.info("No vacancy is available for the preferred grade {} " +
                             "Adding student {} to the database aborted",
                     studentRequestDto.getGradePreferred(), studentRequestDto.getStudentName());
-            StudentResponceDto studentResponceDto = new StudentResponceDto();
-            studentResponceDto.setIsGradeAvailable(false);
-            return studentResponceDto;
+            throw new GradeNotFoundException("No vacancy is available for the preferred grade" + studentRequestDto.getGradePreferred() +
+                     " Adding student {} to the database aborted");
         }
         rollNumberSuffix = grade.getNumberOfStudents();
         rollNumber = generateRollNumber(grade.getStandard() + grade.getSection(),
@@ -93,15 +91,13 @@ public class StudentServiceImpl implements StudentService {
         gradeServiceImpl.updateNoOfStudentsAndVacancyAvailablity(grade.getGradeId(), true);
         logger.debug("Association of student {} to the preferred special classes", studentRequestDto.getStudentName());
         List<SpecialClassesEnum> specialClassPreferences = studentRequestDto.getSpecialClassEnums();
-        System.out.println(specialClassPreferences.isEmpty());
         List<SpecialClass> specialClasses = specialclassRepo.findByClassType(specialClassPreferences);
-        System.out.println("special classes...." + specialClasses.size());
         List<SpecialClassesEnum> specialClassesWithoutVacancy = checkAndGetSpecialClassWithoutVacancy(specialClasses);
         if(!specialClassesWithoutVacancy.isEmpty()) {
-            EntityDtoConverter.toStudentResponceDto(student, grade, rollNumber, specialClassesWithoutVacancy);
-            StudentResponceDto studentResponceDto = new StudentResponceDto();
+            StudentResponceDto studentResponceDto = EntityDtoConverter.toStudentResponceDto(student, grade, rollNumber, specialClassesWithoutVacancy);
             studentResponceDto.setSpecialClassesWithoutVacancy(specialClassesWithoutVacancy);
-            return studentResponceDto;
+            String errorMessage = "No vacancy is available in preferred special class(es)";
+            throw new SpecialClassNotfoundException(errorMessage, studentResponceDto);
         }
         student.setSpecialClasses(ConversionUtil.convertArrayListToSet(specialClasses));
         specialClassServiceImpl.UpdateVacancyOfSpecialClass(specialClassPreferences, true);
@@ -140,7 +136,8 @@ public class StudentServiceImpl implements StudentService {
     public DeleteStudentResponceDto deleteStudentByRollNumber(String rollNumber) {
         Student student = studentRepo.findByRollNumber(rollNumber); // Find the student first
         if (student == null) {
-            return null;
+            String errorMessage = rollNumber + "No such roll number found in database!";
+            throw new StudentNotFoundException(errorMessage);
         }
         Set<SpecialClass> specialClasses = student.getSpecialClass();
         List<SpecialClassesEnum> associatedSpecialClassEnums = ConversionUtil.convertSetToList(specialClasses);
@@ -171,7 +168,8 @@ public class StudentServiceImpl implements StudentService {
     public List<FetchStudentByGradeDto> getStudentByGrade(String requestedGrade) {
         List<Student> students= studentRepo.findByGradeId(requestedGrade);
         if(ObjectUtils.isEmpty(students)) {
-            return null;
+            String errorMessage = "No such grade requestedGrade " + requestedGrade + " found!";
+            throw new GradeNotFoundException(errorMessage);
         }
         List<FetchStudentByGradeDto> fetchStudentByGradeDtos = new ArrayList<>();
         for (Student student : students) {
@@ -220,9 +218,9 @@ public class StudentServiceImpl implements StudentService {
     public FetchStudentDto getStudentByRollNumber(String rollNumber) {
         Student student = studentRepo.findByRollNumber(rollNumber);
         if(ObjectUtils.isEmpty(student)) {
-            FetchStudentDto fetchStudentDto = new FetchStudentDto();
-            fetchStudentDto.setIsStudentAvailable(false);
-            return fetchStudentDto;
+            String errorMessage = "No such student with roll number " +
+                    rollNumber + " found in database!";
+            throw new StudentNotFoundException(errorMessage);
         }
         return  EntityDtoConverter.toFetchStudentDto(student);
     }

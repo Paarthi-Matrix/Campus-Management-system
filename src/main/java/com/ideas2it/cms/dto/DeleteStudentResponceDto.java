@@ -11,4 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DeleteStudentResponceDto {
     private String studentName;
+    private String rollNumber;
 }

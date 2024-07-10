@@ -32,6 +32,13 @@ public class EntityDtoConverter {
     public static DeleteStudentResponceDto toDeleteStudentResponceDto(Student student) {
         DeleteStudentResponceDto deleteStudentResponceDto = new DeleteStudentResponceDto();
         deleteStudentResponceDto.setStudentName(student.getStudentName());
+        deleteStudentResponceDto.setRollNumber(student.getRollNumber());
+        return deleteStudentResponceDto;
+    }
+
+    public static DeleteStudentResponceDto toDeleteStudentResponceDto(String rollNumber) {
+        DeleteStudentResponceDto deleteStudentResponceDto = new DeleteStudentResponceDto();
+        deleteStudentResponceDto.setStudentName(rollNumber);
         return deleteStudentResponceDto;
     }
 
@@ -83,6 +90,12 @@ public class EntityDtoConverter {
         studentResponceDto.setRollNumber(rollNumber);
         studentResponceDto.setAge(DateUtil.calculateDifferenceOfTwoDates(student.getDateOfBirth(), null, "Year"));
         studentResponceDto.setSpecialClassesWithoutVacancy(specialClassesWithoutVacancy);
+        return studentResponceDto;
+    }
+    public static StudentResponceDto toStudentResponceDto(StudentRequestDto studentRequestDto) {
+        StudentResponceDto studentResponceDto = new StudentResponceDto();
+        studentResponceDto.setStudentName(studentRequestDto.getStudentName());
+        studentResponceDto.setIsGradeAvailable(false);
         return studentResponceDto;
     }
 }
